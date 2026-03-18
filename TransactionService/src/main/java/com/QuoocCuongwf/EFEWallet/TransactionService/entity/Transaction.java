@@ -1,4 +1,4 @@
-package com.QuoocCuongwf.EFEWallet.TransactionService.entities;
+package com.QuoocCuongwf.EFEWallet.TransactionService.entity;
 
 import com.QuoocCuongwf.EFEWallet.TransactionService.enums.TransactionType;
 import com.QuoocCuongwf.EFEWallet.TransactionService.enums.TransactionStatus;
