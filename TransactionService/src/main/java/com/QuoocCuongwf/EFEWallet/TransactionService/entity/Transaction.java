@@ -42,13 +42,13 @@ public class Transaction {
     private BigDecimal amount;
 
     @Column(precision = 19, scale = 4)
-    private BigDecimal fee; // Phí giao dịch nếu có
+    private BigDecimal fee;
 
     @Column(length = 500)
     private String description;
 
     @Column(unique = true)
-    private String externalTransactionId; // Mã giao dịch từ đối tác (ví dụ: MoMo transactionId)
+    private String externalTransactionId;
 
     @CreationTimestamp
     @Column(updatable = false)
