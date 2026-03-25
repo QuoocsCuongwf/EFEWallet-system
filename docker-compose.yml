@@ -121,6 +121,8 @@ services:
     build:
       context: ./WalletService
     container_name: wallet-service
+    env_file:
+      - ./WalletService/.env
     environment:
       DB_URL: jdbc:postgresql://wallet-db:5432/wallet_service_db
       DB_USERNAME: wallet
