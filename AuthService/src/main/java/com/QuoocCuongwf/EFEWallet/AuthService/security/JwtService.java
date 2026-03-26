@@ -3,6 +3,7 @@ package com.QuoocCuongwf.EFEWallet.AuthService.security;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.security.Keys;
@@ -10,6 +11,7 @@ import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Date;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -27,10 +29,17 @@ public class JwtService {
     public String generateToken(CustomUserDetails customUserDetails) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMs);
+        List<String> permissions = customUserDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+        List<String> roles = customUserDetails.getUser().getRole().stream()
+                .map(role -> role.getName())
+                .toList();
+
         return Jwts.builder()
-                .setSubject(Long.toString(customUserDetails.getId()))
-                .claim("roles", customUserDetails.getAuthorities())
-                .setIssuer("auth service")
+                .setSubject(customUserDetails.getId().toString())
+                .claim("roles", roles)           // optional
+                .claim("permissions", permissions)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSignInKey(), SignatureAlgorithm.HS512)

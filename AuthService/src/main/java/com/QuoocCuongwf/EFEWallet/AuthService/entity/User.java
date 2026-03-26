@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -35,9 +36,13 @@ public class User {
     @Column(nullable = false)
     private String firstName;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
-
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Roles> role;
     private boolean enabled = true;
 
     private LocalDateTime createdAt;

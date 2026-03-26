@@ -43,6 +43,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         } catch (Exception ex) {
             log.error("failed on set user authentication", ex);
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+            return;
         }
 
         filterChain.doFilter(httpServletRequest, httpServletResponse);
