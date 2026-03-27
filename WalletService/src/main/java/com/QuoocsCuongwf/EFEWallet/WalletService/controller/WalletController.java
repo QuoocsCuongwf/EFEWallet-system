@@ -29,25 +29,16 @@ public class WalletController {
             Authentication auth
     ) {
         log.info("Get balance for walletId={} by user={}", id, auth.getName());
-        String username = auth.getName(); // hoặc cast Principal
-        BalanceResponse balance = walletService.balance(id);
         return ResponseEntity.ok(
-                ApiResponse.<BalanceResponse>builder()
-                        .success(true)
-                        .message("Get balace successfully")
-                        .data(balance)
-                        .build()
+                ApiResponse.success(walletService.balance(id))
         );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<WalletResponse>> wallet(@PathVariable UUID walletId){
+    @IsOwner
+    public ResponseEntity<ApiResponse<WalletResponse>> wallet(@PathVariable("id") UUID walletId){
         return ResponseEntity.ok(
-                ApiResponse.<WalletResponse>builder()
-                        .success(true)
-                        .message("Get wallet detail successfully")
-                        .data(walletService.wallet(walletId))
-                        .build()
+                ApiResponse.success(walletService.wallet(walletId))
         );
     }
 }
