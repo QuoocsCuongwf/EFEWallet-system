@@ -3,6 +3,7 @@ package com.QuoocsCuongwf.EFEWallet.WalletService.config;
 import com.QuoocsCuongwf.EFEWallet.WalletService.security.JwtAuthFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
