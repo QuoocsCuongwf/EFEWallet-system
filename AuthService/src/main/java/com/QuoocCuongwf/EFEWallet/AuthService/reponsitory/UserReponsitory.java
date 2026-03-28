@@ -3,6 +3,8 @@ package com.QuoocCuongwf.EFEWallet.AuthService.reponsitory;
 import com.QuoocCuongwf.EFEWallet.AuthService.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserReponsitory extends JpaRepository<User,Long> {
+import java.util.UUID;
+
+public interface UserReponsitory extends JpaRepository<User, UUID> {
      User findUserByEmail(String email);
 }

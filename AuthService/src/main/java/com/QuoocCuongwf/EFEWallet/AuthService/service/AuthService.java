@@ -57,6 +57,7 @@ public class AuthService {
                 .enabled(true)
                 .build();
         User saved = userReponsitory.save(user);
+
         return new RegisterResponse(saved.getId(), saved.getEmail(), "Register success");
     }
 }

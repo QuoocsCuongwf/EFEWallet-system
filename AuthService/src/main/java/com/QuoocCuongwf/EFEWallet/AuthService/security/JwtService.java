@@ -12,16 +12,16 @@ import java.security.Key;
 import java.util.Date;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
 public class JwtService {
-    @Value("${jwt.secret}")
+    @Value("${jwt.secret:${JWT_SECRET:default_secret_key_very_long_for_security}}")
     private String secretKey;
 
-    @Value("${jwt.expiration-ms:3600000}")
+    @Value("${jwt.expiration-ms:${JWT_EXPIRATION_MS:3600000}}")
     private long expirationMs;
-
     private Key getSignInKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
@@ -46,14 +46,14 @@ public class JwtService {
                 .compact();
     }
 
-    public Long getUserIdFromJWT(String token) {
+    public UUID getUserIdFromJWT(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSignInKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
 
-        return Long.parseLong(claims.getSubject());
+        return UUID.fromString(claims.getSubject());
     }
 
     public boolean validateToken(String authToken) {

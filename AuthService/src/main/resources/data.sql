@@ -1,4 +1,8 @@
--- AuthService seed data only: permissions, roles, users, and join tables.
+-- Shared IDs used across services:
+-- users:
+--   alice = 33333333-3333-3333-3333-333333333001
+--   bob   = 33333333-3333-3333-3333-333333333002
+--   admin = 33333333-3333-3333-3333-333333333003
 
 TRUNCATE TABLE role_permissions, user_roles, users, roles, permissions RESTART IDENTITY;
 
@@ -49,14 +53,39 @@ INSERT INTO role_permissions (role_id, permission_id)
 SELECT '22222222-2222-2222-2222-222222222002', id
 FROM permissions;
 
-INSERT INTO users (id, email, password, first_name, last_name, enabled, created_at, updated_at) VALUES
-  (1, 'admin@wallet.local', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5X4s2c9ZwTe74MkRUYw35vj0IwyK2', 'Admin', 'User', true, now(), now()),
-  (2, 'alice@wallet.local', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5X4s2c9ZwTe74MkRUYw35vj0IwyK2', 'Alice', 'Nguyen', true, now(), now()),
-  (3, 'bob@wallet.local', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5X4s2c9ZwTe74MkRUYw35vj0IwyK2', 'Bob', 'Tran', true, now(), now());
+INSERT INTO users (id, password, email, last_name, first_name, enabled, created_at, updated_at) VALUES
+  (
+    '33333333-3333-3333-3333-333333333001',
+    '$2a$12$zzmw5giVXJFrR5ils43nEuBXQRehtoLuJ4ywlfd0KsPlcoau0CX5y',
+    'alice@efewallet.local',
+    'Nguyen',
+    'Alice',
+    true,
+    '2026-01-01 08:00:00',
+    '2026-01-01 08:00:00'
+  ),
+  (
+    '33333333-3333-3333-3333-333333333002',
+    '$2a$12$40dIzUmrc8tgoWI8hYiS9e29wA3/6pqlMS.58GfNx22VtQn5TQT62',
+    'bob@efewallet.local',
+    'Tran',
+    'Bob',
+    true,
+    '2026-01-01 08:00:00',
+    '2026-01-01 08:00:00'
+  ),
+  (
+    '33333333-3333-3333-3333-333333333003',
+    '$2a$12$zs1hI02d8UBm06ptF5aYceeCul0w.BQvcr0c8zqeybTg/mnA.6uSW',
+    'admin@efewallet.local',
+    'System',
+    'Admin',
+    true,
+    '2026-01-01 08:00:00',
+    '2026-01-01 08:00:00'
+  );
 
 INSERT INTO user_roles (user_id, role_id) VALUES
-  (1, '22222222-2222-2222-2222-222222222002'),
-  (2, '22222222-2222-2222-2222-222222222001'),
-  (3, '22222222-2222-2222-2222-222222222001');
-
-SELECT setval('user_seq', (SELECT COALESCE(MAX(id), 1) FROM users), true);
+  ('33333333-3333-3333-3333-333333333001', '22222222-2222-2222-2222-222222222001'),
+  ('33333333-3333-3333-3333-333333333002', '22222222-2222-2222-2222-222222222001'),
+  ('33333333-3333-3333-3333-333333333003', '22222222-2222-2222-2222-222222222002');
