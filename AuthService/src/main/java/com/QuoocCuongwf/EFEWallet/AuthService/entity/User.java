@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -15,13 +17,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq_gen")
-    @SequenceGenerator(
-            name = "user_seq_gen",
-            sequenceName = "user_seq",
-            allocationSize = 1
-    )
-    private Long id;
+    @GeneratedValue
+    private UUID id;
 
     @Column(nullable = false)
     private String password;
@@ -35,9 +32,13 @@ public class User {
     @Column(nullable = false)
     private String firstName;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
-
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Roles> role;
     private boolean enabled = true;
 
     private LocalDateTime createdAt;

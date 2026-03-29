@@ -1,23 +1,91 @@
--- Seed data for Postgres. Uses quoted table names to avoid reserved keywords.
+-- Shared IDs used across services:
+-- users:
+--   alice = 33333333-3333-3333-3333-333333333001
+--   bob   = 33333333-3333-3333-3333-333333333002
+--   admin = 33333333-3333-3333-3333-333333333003
 
-INSERT INTO "USER" (id, email, password, first_name, last_name, role, enabled, created_at, updated_at)
-VALUES
-  (1, 'admin@wallet.local', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5X4s2c9ZwTe74MkRUYw35vj0IwyK2', 'Admin', 'User', 'ADMIN', true, now(), now()),
-  (2, 'alice@wallet.local', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5X4s2c9ZwTe74MkRUYw35vj0IwyK2', 'Alice', 'Nguyen', 'USER', true, now(), now()),
-  (3, 'bob@wallet.local',   '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5X4s2c9ZwTe74MkRUYw35vj0IwyK2', 'Bob',   'Tran',   'USER', true, now(), now());
+TRUNCATE TABLE role_permissions, user_roles, users, roles, permissions RESTART IDENTITY;
 
-SELECT setval('user_seq', (SELECT COALESCE(MAX(id), 0) FROM "USER"));
+INSERT INTO permissions (id, name) VALUES
+  ('11111111-1111-1111-1111-111111111001', 'VIEW_WALLET'),
+  ('11111111-1111-1111-1111-111111111002', 'CREATE_WALLET'),
+  ('11111111-1111-1111-1111-111111111003', 'UPDATE_WALLET'),
+  ('11111111-1111-1111-1111-111111111004', 'DELETE_WALLET'),
+  ('11111111-1111-1111-1111-111111111005', 'TRANSFER'),
+  ('11111111-1111-1111-1111-111111111006', 'DEPOSIT'),
+  ('11111111-1111-1111-1111-111111111007', 'WITHDRAW'),
+  ('11111111-1111-1111-1111-111111111008', 'VIEW_TRANSACTION'),
+  ('11111111-1111-1111-1111-111111111009', 'VIEW_PROFILE'),
+  ('11111111-1111-1111-1111-111111111010', 'UPDATE_PROFILE'),
+  ('11111111-1111-1111-1111-111111111011', 'DELETE_ACCOUNT'),
+  ('11111111-1111-1111-1111-111111111012', 'CHANGE_PASSWORD'),
+  ('11111111-1111-1111-1111-111111111013', 'LOGOUT'),
+  ('11111111-1111-1111-1111-111111111014', 'REFRESH_TOKEN'),
+  ('11111111-1111-1111-1111-111111111015', 'ADMIN_VIEW_ALL_WALLETS'),
+  ('11111111-1111-1111-1111-111111111016', 'ADMIN_VIEW_ALL_TRANSACTIONS'),
+  ('11111111-1111-1111-1111-111111111017', 'ADMIN_MANAGE_USERS'),
+  ('11111111-1111-1111-1111-111111111018', 'ADMIN_MANAGE_ROLES'),
+  ('11111111-1111-1111-1111-111111111019', 'ADMIN_MANAGE_PERMISSIONS');
 
-INSERT INTO "WALLET" (wallet_address, status, user_id, created_at)
-VALUES
-  ('WALLET-ALICE-0001', 'ACTIVE', 2, now()),
-  ('WALLET-BOB-0001',   'ACTIVE', 3, now());
+INSERT INTO roles (id, name) VALUES
+  ('22222222-2222-2222-2222-222222222001', 'USER'),
+  ('22222222-2222-2222-2222-222222222002', 'ADMIN');
 
-INSERT INTO "TRANSACTION" (transaction_id, amount, type, status, balance_before, balance_after, wallet_id, created_at)
-VALUES
-  ('TXN-ALICE-0001', 1000.00, 'DEPOSIT',     'SUCCESS', 0.00,    1000.00, 'WALLET-ALICE-0001', now()),
-  ('TXN-ALICE-0002', 150.00,  'PAYMENT',     'SUCCESS', 1000.00, 850.00,  'WALLET-ALICE-0001', now()),
-  ('TXN-BOB-0001',   500.00,  'DEPOSIT',     'SUCCESS', 0.00,    500.00,  'WALLET-BOB-0001',   now()),
-  ('TXN-BOB-0002',   75.00,   'WITHDRAW',    'SUCCESS', 500.00,  425.00,  'WALLET-BOB-0001',   now()),
-  ('TXN-ALICE-0003', 50.00,   'TRANSFER_OUT','SUCCESS', 850.00,  800.00,  'WALLET-ALICE-0001', now()),
-  ('TXN-BOB-0003',   50.00,   'TRANSFER_IN', 'SUCCESS', 425.00,  475.00,  'WALLET-BOB-0001',   now());
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT '22222222-2222-2222-2222-222222222001', id
+FROM permissions
+WHERE name IN (
+  'VIEW_WALLET',
+  'CREATE_WALLET',
+  'UPDATE_WALLET',
+  'TRANSFER',
+  'DEPOSIT',
+  'WITHDRAW',
+  'VIEW_TRANSACTION',
+  'VIEW_PROFILE',
+  'UPDATE_PROFILE',
+  'CHANGE_PASSWORD',
+  'LOGOUT',
+  'REFRESH_TOKEN'
+);
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT '22222222-2222-2222-2222-222222222002', id
+FROM permissions;
+
+INSERT INTO users (id, password, email, last_name, first_name, enabled, created_at, updated_at) VALUES
+  (
+    '33333333-3333-3333-3333-333333333001',
+    '$2a$12$zzmw5giVXJFrR5ils43nEuBXQRehtoLuJ4ywlfd0KsPlcoau0CX5y',
+    'alice@efewallet.local',
+    'Nguyen',
+    'Alice',
+    true,
+    '2026-01-01 08:00:00',
+    '2026-01-01 08:00:00'
+  ),
+  (
+    '33333333-3333-3333-3333-333333333002',
+    '$2a$12$40dIzUmrc8tgoWI8hYiS9e29wA3/6pqlMS.58GfNx22VtQn5TQT62',
+    'bob@efewallet.local',
+    'Tran',
+    'Bob',
+    true,
+    '2026-01-01 08:00:00',
+    '2026-01-01 08:00:00'
+  ),
+  (
+    '33333333-3333-3333-3333-333333333003',
+    '$2a$12$zs1hI02d8UBm06ptF5aYceeCul0w.BQvcr0c8zqeybTg/mnA.6uSW',
+    'admin@efewallet.local',
+    'System',
+    'Admin',
+    true,
+    '2026-01-01 08:00:00',
+    '2026-01-01 08:00:00'
+  );
+
+INSERT INTO user_roles (user_id, role_id) VALUES
+  ('33333333-3333-3333-3333-333333333001', '22222222-2222-2222-2222-222222222001'),
+  ('33333333-3333-3333-3333-333333333002', '22222222-2222-2222-2222-222222222001'),
+  ('33333333-3333-3333-3333-333333333003', '22222222-2222-2222-2222-222222222002');
