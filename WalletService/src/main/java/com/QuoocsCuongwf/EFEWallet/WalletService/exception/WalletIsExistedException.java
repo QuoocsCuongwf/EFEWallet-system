@@ -1,7 +1,7 @@
 package com.QuoocsCuongwf.EFEWallet.WalletService.exception;
 
-public class WalletIsExist extends RuntimeException {
-    public WalletIsExist(String message) {
+public class WalletIsExistedException extends RuntimeException {
+    public WalletIsExistedException(String message) {
         super(message);
     }
 }

@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public interface WalletRepository extends JpaRepository<WalletEntity, UUID> {
     Boolean existsWalletEntitiesByUserId(UUID walletId,UUID userId);
-    Optional<BigDecimal> getBalanceByWalletId(UUID walletId);
-    Optional<WalletEntity> getWalletEntitiesByWalletId(UUID walletId);
+    Optional<BigDecimal> getBalanceById(UUID walletId);
+    Optional<WalletEntity> findById(UUID walletId);
+    boolean existsWalletEntityByUserId(UUID userId);
 }

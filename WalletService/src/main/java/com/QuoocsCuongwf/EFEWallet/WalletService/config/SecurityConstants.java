@@ -12,6 +12,8 @@ public final class SecurityConstants {
     public static final String ADMIN_API =API_ROOT + "/admin";
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String TOKEN_PREFIX = "Bearer ";
+    public static final String WALLET_STATUS_ACTIVATE = "ACTIVATE";
+    public static final String WALLET_STATUS_LOCKED = "LOCKED";
 
     public static final int BCRYPT_STRENGTH = 12;
 

@@ -1,7 +1,10 @@
 package com.QuoocsCuongwf.EFEWallet.WalletService.service;
 
+import com.QuoocsCuongwf.EFEWallet.WalletService.Enum.WalletStatus;
 import com.QuoocsCuongwf.EFEWallet.WalletService.Repository.WalletRepository;
+import com.QuoocsCuongwf.EFEWallet.WalletService.config.SecurityConstants;
 import com.QuoocsCuongwf.EFEWallet.WalletService.entity.WalletEntity;
+import com.QuoocsCuongwf.EFEWallet.WalletService.exception.WalletIsExistedException;
 import com.QuoocsCuongwf.EFEWallet.WalletService.exception.WalletNotFoundException;
 import com.QuoocsCuongwf.EFEWallet.WalletService.payload.response.BalanceResponse;
 import com.QuoocsCuongwf.EFEWallet.WalletService.payload.response.WalletResponse;
@@ -17,6 +20,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.stream;
+import static org.springframework.amqp.core.QueueBuilder.LeaderLocator.random;
 
 @Service
 @AllArgsConstructor
@@ -26,7 +33,7 @@ public class WalletService {
     private final RedisTemplate<Object, Object> redisTemplate;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     public BalanceResponse balance (UUID walletId){
-        BigDecimal balance = walletRepository.getBalanceByWalletId(walletId)
+        BigDecimal balance = walletRepository.getBalanceById(walletId)
                 .orElseThrow(()-> new WalletNotFoundException("Wallet " + walletId + " not found"));
         BalanceResponse balanceResponse=BalanceResponse.builder()
                 .balance(balance)
@@ -36,7 +43,7 @@ public class WalletService {
     }
 
     public WalletResponse wallet (UUID walletId){
-        WalletEntity walletEntity=walletRepository.getWalletEntitiesByWalletId(walletId)
+        WalletEntity walletEntity=walletRepository.findById(walletId)
                 .orElseThrow(()-> new WalletNotFoundException("Wallet " + walletId + " not found"));
         return WalletResponse.builder()
                 .walletId(walletEntity.getId())
@@ -44,6 +51,33 @@ public class WalletService {
                 .userId(walletEntity.getUserId())
                 .status(walletEntity.getWalletStatus())
                 .createAt(walletEntity.getCreatedAt())
+                .build();
+    }
+
+    public WalletResponse generation (UUID userId) {
+        if (walletRepository.existsWalletEntityByUserId(userId)) {
+            throw new WalletIsExistedException(userId.toString() + " had wallet");
+        }
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[20];
+        new SecureRandom().nextBytes(bytes);
+
+        StringBuilder sb = new StringBuilder("0x");
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        String address = sb.toString();
+
+        WalletEntity wallet = WalletEntity.builder()
+                .walletStatus(WalletStatus.ACTIVATE)
+                .walletAddress(address)
+                .build();
+        walletRepository.save(wallet);
+
+        return WalletResponse.builder()
+                .walletId(wallet.getId())
+                .walletAddress(wallet.getWalletAddress())
+                .status(wallet.getWalletStatus())
                 .build();
     }
 

@@ -17,7 +17,7 @@ import java.util.UUID;
 @RestController
 @Slf4j
 @AllArgsConstructor
-@RequestMapping(SecurityConstants.API_ROOT+SecurityConstants.WALLET_API)
+@RequestMapping(SecurityConstants.WALLET_API)
 public class WalletController {
     private final WalletService walletService;
     @GetMapping("/{id}/balance")
@@ -34,11 +34,18 @@ public class WalletController {
 
     @GetMapping("/{id}")
     @IsOwner
-    public ResponseEntity<ApiResponse<WalletResponse>> wallet(@PathVariable("id") UUID walletId){
+    public ResponseEntity<ApiResponse<WalletResponse>> wallet(
+            @PathVariable("id") UUID walletId,
+            Authentication auth) {
+
+        log.info("Controller reached: walletId={} by user={}", walletId, auth.getName());
+
         return ResponseEntity.ok(
                 ApiResponse.success(walletService.wallet(walletId))
         );
     }
+
+    @PostMapping("/generation")
 
 
 }

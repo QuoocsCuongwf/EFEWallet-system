@@ -8,14 +8,13 @@ import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import javax.crypto.SecretKey;
 
 
 @Component
 public class JwtUtil {
     private final SecretKey sighingKey;
 
-    public JwtUtil(@Value("${JWT_SECRET}") String secretKey){
+    public JwtUtil(@Value("${jwt.secret}") String secretKey){
         this.sighingKey=Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -23,7 +22,7 @@ public class JwtUtil {
         return Jwts.parserBuilder()
                 .setSigningKey(sighingKey)
                 .build()
-                .parseClaimsJwt(token)
+                .parseClaimsJws(token)
                 .getBody();
     }
 }
