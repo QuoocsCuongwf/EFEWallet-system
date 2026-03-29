@@ -46,6 +46,12 @@ public class WalletController {
     }
 
     @PostMapping("/generation")
-
+    public ResponseEntity<ApiResponse<WalletResponse>> generation(Authentication auth) {
+        UUID userId = UUID.fromString(auth.getName());
+        log.info("Generate wallet for user={}", userId);
+        return ResponseEntity.ok(
+                ApiResponse.success(walletService.generation(userId))
+        );
+    }
 
 }

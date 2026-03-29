@@ -109,7 +109,7 @@ services:
       JWT_SECRET: QuoocsCuongwf_EFEWalletProject_SecretKey_ChangeThisToAtLeast64BytesLong
       JWT_EXPIRATION_MS: 3600000
       SPRING_JPA_DDL_AUTO: update
-      SPRING_SQL_INIT_MODE: never
+      SPRING_SQL_INIT_MODE: always
       SERVER_PORT: 8084
     ports:
       - "8084:8084"

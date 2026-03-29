@@ -2,7 +2,6 @@ package com.QuoocsCuongwf.EFEWallet.WalletService.service;
 
 import com.QuoocsCuongwf.EFEWallet.WalletService.Enum.WalletStatus;
 import com.QuoocsCuongwf.EFEWallet.WalletService.Repository.WalletRepository;
-import com.QuoocsCuongwf.EFEWallet.WalletService.config.SecurityConstants;
 import com.QuoocsCuongwf.EFEWallet.WalletService.entity.WalletEntity;
 import com.QuoocsCuongwf.EFEWallet.WalletService.exception.WalletIsExistedException;
 import com.QuoocsCuongwf.EFEWallet.WalletService.exception.WalletNotFoundException;
@@ -20,10 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import static java.util.Arrays.stream;
-import static org.springframework.amqp.core.QueueBuilder.LeaderLocator.random;
 
 @Service
 @AllArgsConstructor
@@ -69,8 +65,12 @@ public class WalletService {
         String address = sb.toString();
 
         WalletEntity wallet = WalletEntity.builder()
-                .walletStatus(WalletStatus.ACTIVATE)
+                .userId(userId)
+                .balance(BigDecimal.ZERO)
                 .walletAddress(address)
+                .walletStatus(WalletStatus.ACTIVATE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
         walletRepository.save(wallet);
 
