@@ -30,7 +30,7 @@ public class TransactionController {
             validatePayload = true
     )
     public ResponseEntity<ApiResponse<TransferResponse>> transfer (
-            @RequestHeader("Idempotency-Key") String idemKey,
+            @RequestHeader("idempotency-Key") String idemKey,
             Authentication auth,
             @RequestBody TransferRequest transferRequest){
         String userId=auth.getName();

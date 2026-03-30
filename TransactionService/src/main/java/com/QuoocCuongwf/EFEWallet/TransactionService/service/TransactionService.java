@@ -15,6 +15,6 @@ public class TransactionService {
     public TransferResponse transfer(TransferRequest transferRequest){
         UUID walletId=transferRequest.getToWalletId();
         TransferResponse transferResponse = TransferResponse.builder().build();
-        return TransferResponse;
+        return transferResponse;
     }
 }
