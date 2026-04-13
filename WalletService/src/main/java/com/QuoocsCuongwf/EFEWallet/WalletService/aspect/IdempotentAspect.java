@@ -1,15 +1,14 @@
-package com.QuoocCuongwf.EFEWallet.TransactionService.aspect;
+package com.QuoocsCuongwf.EFEWallet.WalletService.aspect;
 
-import com.QuoocCuongwf.EFEWallet.TransactionService.entity.IdempotencyKey;
-import com.QuoocCuongwf.EFEWallet.TransactionService.enums.IdempotencyStatus;
-import com.QuoocCuongwf.EFEWallet.TransactionService.exception.IdempotencyException;
-import com.QuoocCuongwf.EFEWallet.TransactionService.reponsitory.IdempotencyKeyRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.QuoocsCuongwf.EFEWallet.WalletService.Repository.IdempotencyKeyRepository;
+import com.QuoocsCuongwf.EFEWallet.WalletService.entity.IdempotencyKey;
+import com.QuoocsCuongwf.EFEWallet.WalletService.enums.IdempotencyStatus;
+import com.QuoocsCuongwf.EFEWallet.WalletService.exception.IdempotencyException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.*;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -17,24 +16,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import tools.jackson.databind.ObjectMapper;
 
 import java.security.InvalidAlgorithmParameterException;
+import java.util.Map;
 import java.util.Optional;
 
 @Aspect
 @Component
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
+@RequiredArgsConstructor
 public class IdempotentAspect {
-    private IdempotencyKeyRepository idempotencyKeyRepository;
-    private ObjectMapper objectMapper;
-    @Around("@annotation(com.QuoocCuongwf.EFEWallet.TransactionService.annotation.Idempotent)")
+    private final IdempotencyKeyRepository idempotencyKeyRepository;
+    private final ObjectMapper objectMapper;
+
+    @Around("@annotation(com.QuoocsCuongwf.EFEWallet.WalletService.annotation.Idempotent)")
+    @Transactional
     public Object HandlIdemponcy(ProceedingJoinPoint joinPoint) throws Throwable {
         HttpServletRequest request=((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String key=request.getHeader("Idempotency-Key");
@@ -45,12 +44,20 @@ public class IdempotentAspect {
         String requestHash = DigestUtils.sha256Hex(payload);
         Authentication auth= SecurityContextHolder.getContext().getAuthentication();
         String userId=auth.getName();
-        Optional<IdempotencyKey> existing = idempotencyKeyRepository.findByIdempotencyKeyAndUserId(key,userId);
+        Optional<IdempotencyKey> existing = idempotencyKeyRepository.findForUpdate(key,userId);
         if (existing.isPresent()) {
-            if (existing.get().getRequestHash().equals(requestHash)) {
+            if (!existing.get().getRequestHash().equals(requestHash)) {
                 throw new IdempotencyException("Payload mismatch for existing idempotency key");
             }
-            return ResponseEntity.ok().build();
+            if (existing.get().getStatus() == IdempotencyStatus.SUCCESS && existing.get().getResponseBody() != null) {
+                int responseStatus = existing.get().getResponseStatus() != null ? existing.get().getResponseStatus() : 200;
+                Object cachedBody = objectMapper.readValue(existing.get().getResponseBody(), Map.class);
+                return ResponseEntity.status(responseStatus).body(cachedBody);
+            }
+            if (existing.get().getStatus() == IdempotencyStatus.PROCESSING) {
+                throw new IdempotencyException("Request with this idempotency key is being processed");
+            }
+            throw new IdempotencyException("Request with this idempotency key has failed before");
         }
 
         IdempotencyKey record = IdempotencyKey.builder()
@@ -88,8 +95,8 @@ public class IdempotentAspect {
                 }
             }
             return "";
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize request body");
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize request body", e);
         }
     }
 

@@ -1,6 +1,6 @@
-package com.QuoocCuongwf.EFEWallet.TransactionService.annotation;
+package com.QuoocsCuongwf.EFEWallet.WalletService.annotation;
 
-import com.QuoocCuongwf.EFEWallet.TransactionService.enums.TransactionType;
+import com.QuoocsCuongwf.EFEWallet.WalletService.enums.TransactionType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

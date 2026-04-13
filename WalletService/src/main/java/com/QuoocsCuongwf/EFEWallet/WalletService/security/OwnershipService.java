@@ -15,10 +15,10 @@ public class OwnershipService {
     @Autowired
     private WalletRepository walletRepository;
 
-    public boolean isOwner(Authentication authentication, UUID id) {
+    public boolean isOwner(Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
 
-        return walletRepository.findById(id)
+        return walletRepository.findByUserId(userId)
                 .map(wallet -> wallet.getUserId().equals(userId))
                 .orElse(false);
     }

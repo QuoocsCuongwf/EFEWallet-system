@@ -1,11 +1,15 @@
 package com.QuoocsCuongwf.EFEWallet.WalletService.controller;
 
+import com.QuoocsCuongwf.EFEWallet.WalletService.annotation.Idempotent;
 import com.QuoocsCuongwf.EFEWallet.WalletService.annotation.IsOwner;
 import com.QuoocsCuongwf.EFEWallet.WalletService.config.SecurityConstants;
-import com.QuoocsCuongwf.EFEWallet.WalletService.payload.response.ApiResponse;
-import com.QuoocsCuongwf.EFEWallet.WalletService.payload.response.BalanceResponse;
-import com.QuoocsCuongwf.EFEWallet.WalletService.payload.response.WalletResponse;
+import com.QuoocsCuongwf.EFEWallet.WalletService.enums.TransactionType;
+import com.QuoocsCuongwf.EFEWallet.WalletService.service.TransactionService;
 import com.QuoocsCuongwf.EFEWallet.WalletService.service.WalletService;
+import com.QuoocsCuongwf.EFEWallet.WalletService.payload.response.*;
+import com.QuoocsCuongwf.EFEWallet.WalletService.payload.request.*;
+import com.google.rpc.context.AttributeContext;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,28 +24,26 @@ import java.util.UUID;
 @RequestMapping(SecurityConstants.WALLET_API)
 public class WalletController {
     private final WalletService walletService;
-    @GetMapping("/{id}/balance")
-    @IsOwner
+    private final TransactionService transactionService;
+    @GetMapping("/balance")
     public ResponseEntity<ApiResponse<BalanceResponse>> balance(
-            @PathVariable UUID id,
             Authentication auth
     ) {
-        log.info("Get balance for walletId={} by user={}", id, auth.getName());
+        UUID userId = UUID.fromString(auth.getName());
+        log.info("Get balance for user={}",  auth.getName());
         return ResponseEntity.ok(
-                ApiResponse.success(walletService.balance(id))
+                ApiResponse.success(walletService.balance(userId))
         );
     }
 
-    @GetMapping("/{id}")
-    @IsOwner
+    @GetMapping("/")
     public ResponseEntity<ApiResponse<WalletResponse>> wallet(
-            @PathVariable("id") UUID walletId,
             Authentication auth) {
-
-        log.info("Controller reached: walletId={} by user={}", walletId, auth.getName());
+        UUID userId = UUID.fromString(auth.getName());
+        log.info("Controller reached: by user={}", auth.getName());
 
         return ResponseEntity.ok(
-                ApiResponse.success(walletService.wallet(walletId))
+                ApiResponse.success(walletService.wallet(userId))
         );
     }
 
@@ -51,6 +53,21 @@ public class WalletController {
         log.info("Generate wallet for user={}", userId);
         return ResponseEntity.ok(
                 ApiResponse.success(walletService.generation(userId))
+        );
+    }
+
+    @PostMapping("/transfer")
+    @Idempotent(
+            type = TransactionType.TRANSFER,
+            validatePayload = true
+    )
+    public ResponseEntity<ApiResponse<TransferResponse>> transfer (
+            @RequestHeader("idempotency-Key") String idemKey,
+            Authentication auth,
+            @Valid @RequestBody TransferRequest transferRequest
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(transactionService.transfer(transferRequest, idemKey))
         );
     }
 

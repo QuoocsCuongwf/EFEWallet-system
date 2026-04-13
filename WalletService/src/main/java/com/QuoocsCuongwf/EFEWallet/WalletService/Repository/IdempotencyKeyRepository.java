@@ -1,13 +1,14 @@
-package com.QuoocCuongwf.EFEWallet.TransactionService.reponsitory;
+package com.QuoocsCuongwf.EFEWallet.WalletService.Repository;
 
-import com.QuoocCuongwf.EFEWallet.TransactionService.entity.IdempotencyKey;
-import com.QuoocCuongwf.EFEWallet.TransactionService.enums.TransactionStatus;
-import com.QuoocCuongwf.EFEWallet.TransactionService.enums.TransactionType;
+import com.QuoocsCuongwf.EFEWallet.WalletService.entity.IdempotencyKey;
+import com.QuoocsCuongwf.EFEWallet.WalletService.enums.TransactionStatus;
+import com.QuoocsCuongwf.EFEWallet.WalletService.enums.TransactionType;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +27,8 @@ public interface IdempotencyKeyRepository extends JpaRepository<IdempotencyKey, 
     List<IdempotencyKey> findByStatus(TransactionStatus status);
 
     void deleteByCreatedAtBefore(LocalDateTime time);
+
+    @Transactional
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT i FROM IdempotencyKey i WHERE i.idempotencyKey = :key AND i.userId = :userId")
     Optional<IdempotencyKey> findForUpdate(String key, String userId);

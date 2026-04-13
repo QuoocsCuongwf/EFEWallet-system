@@ -1,4 +1,4 @@
-package com.QuoocCuongwf.EFEWallet.TransactionService.exception;
+package com.QuoocsCuongwf.EFEWallet.WalletService.exception;
 
 import lombok.Builder;
 import lombok.Getter;

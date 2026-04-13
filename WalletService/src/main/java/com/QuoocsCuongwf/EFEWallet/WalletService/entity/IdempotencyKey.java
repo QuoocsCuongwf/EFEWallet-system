@@ -1,8 +1,8 @@
-package com.QuoocCuongwf.EFEWallet.TransactionService.entity;
+package com.QuoocsCuongwf.EFEWallet.WalletService.entity;
 
-import com.QuoocCuongwf.EFEWallet.TransactionService.enums.IdempotencyStatus;
-import com.QuoocCuongwf.EFEWallet.TransactionService.enums.TransactionStatus;
-import com.QuoocCuongwf.EFEWallet.TransactionService.enums.TransactionType;
+import com.QuoocsCuongwf.EFEWallet.WalletService.enums.IdempotencyStatus;
+import com.QuoocsCuongwf.EFEWallet.WalletService.enums.TransactionStatus;
+import com.QuoocsCuongwf.EFEWallet.WalletService.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -1,0 +1,60 @@
+package com.QuoocCuongwf.EFEWallet.AuthService.util;
+
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
+
+import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+@Component
+@AllArgsConstructor
+public class OtpUtil {
+    @Autowired
+    private final RedisTemplate<Object, Object> redisTemplate;
+
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    public void generationOtp(UUID userId, String action) {
+        SecureRandom random = new SecureRandom();
+        String otp = String.valueOf(100000 + random.nextInt(900000));
+        String hash = encoder.encode(otp);
+        String key = "otp:" + action + ":" + userId;
+        Map<Object,Object> value=new HashMap<>();
+        value.put("otpHash", hash);
+        value.put("attempt", 0);
+        value.put("maxAttempt", 5);
+
+        redisTemplate.opsForValue().set(key, value, 5, TimeUnit.MINUTES);
+    }
+    public void verifyOtp(String userId, String action, String inputOtp) {
+
+        String key = "otp:" + action + ":" + userId;
+        Map<String, Object> data = (Map<String, Object>) redisTemplate.opsForValue().get(key);
+
+        if (data == null) {
+            throw new RuntimeException("OTP expired or not found");
+        }
+
+        int attempt = (int) data.get("attempt");
+        int maxAttempt = (int) data.get("maxAttempt");
+
+        if (attempt >= maxAttempt) {
+            redisTemplate.delete(key);
+            throw new RuntimeException("Too many attempts");
+        }
+
+        String hash = (String) data.get("otpHash");
+
+        if (!encoder.matches(inputOtp, hash)) {
+            data.put("attempt", attempt + 1);
+            redisTemplate.opsForValue().set(key, data);
+            throw new RuntimeException("Invalid OTP");
+        }
+        redisTemplate.delete(key);
+    }
+}

@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@PreAuthorize("@ownershipService.isOwner(authentication, #p0)")
+@PreAuthorize("@ownershipService.isOwner(authentication)")
 public @interface IsOwner {
 }
