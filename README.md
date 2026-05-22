@@ -271,6 +271,33 @@ mvn clean install
 mvn spring-boot:run
 ```
 
+### Electron Frontend (Desktop)
+
+An Electron desktop client is available at `ElectronFrontend/`.
+
+```bash
+cd ElectronFrontend
+npm install
+npm start
+```
+
+Linux note: if your machine supports SUID sandbox, you can use:
+
+```bash
+npm run start:sandbox
+```
+
+`npm run dev` is also available for local debugging.
+
+Default API URLs used by the app:
+- AuthService: `http://localhost:8083/api/v1`
+- WalletService: `http://localhost:8085/api/v1`
+
+You can change these URLs in the app UI (Backend Config section).
+
+Transfer form now follows backend `TransferRequest` with fields:
+`toWalletAddress`, `amount`, `description`, `referenceCode`.
+
 ---
 
 ## Future Improvements
