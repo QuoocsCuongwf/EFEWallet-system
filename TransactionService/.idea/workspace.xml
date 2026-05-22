@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d60bfbc0-a193-466f-94f7-83497ca83066" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../AuthService/src/main/java/com/QuoocCuongwf/EFEWallet/AuthService/config/RedisConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../AuthService/src/main/java/com/QuoocCuongwf/EFEWallet/AuthService/service/OtpService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../AuthService/src/main/java/com/QuoocCuongwf/EFEWallet/AuthService/util/JwtUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/Repository/TransactionRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/entity/TransactionEntity.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/enums/IdempotencyStatus.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/enums/TransactionStatus.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/enums/TransactionType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/exception/IdempotencyException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/exception/JsonProcessingException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/payload/request/TransferRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/payload/response/TransferResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/service/TransactionService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/util/SecurityUtils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../WalletService/src/main/resources/application.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../docker-compose.kafka.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/EFEWallet.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/EFEWallet.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../AuthService/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../AuthService/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../AuthService/src/main/java/com/QuoocCuongwf/EFEWallet/AuthService/reponsitory/UserReponsitory.java" beforeDir="false" afterPath="$PROJECT_DIR$/../AuthService/src/main/java/com/QuoocCuongwf/EFEWallet/AuthService/reponsitory/UserReponsitory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../AuthService/src/main/java/com/QuoocCuongwf/EFEWallet/AuthService/security/JwtService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../AuthService/src/main/java/com/QuoocCuongwf/EFEWallet/AuthService/security/JwtService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../AuthService/src/main/java/com/QuoocCuongwf/EFEWallet/AuthService/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../AuthService/src/main/java/com/QuoocCuongwf/EFEWallet/AuthService/service/AuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../AuthService/src/main/java/com/QuoocCuongwf/EFEWallet/AuthService/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../AuthService/src/main/java/com/QuoocCuongwf/EFEWallet/AuthService/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../AuthService/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../AuthService/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/TransactionServiceApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/annotation/Idempotent.java" beforeDir="false" afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/annotation/Idempotent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/aspect/IdempotentAspect.java" beforeDir="false" afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/aspect/IdempotentAspect.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/config/SecurityConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/config/SecurityConstants.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/controller/TransactionController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/entity/IdempotencyKey.java" beforeDir="false" afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/entity/IdempotencyKey.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/entity/Transaction.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/enums/IdempotencyStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/enums/TransactionStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/enums/TransactionType.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/exception/DuplicateTransactionException.java" beforeDir="false" afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/exception/DuplicateTransactionException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/exception/IdempotencyException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/exception/InsufficientBalanceException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/exception/WalletNotFoundException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/payload/request/TransferRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/payload/response/ApiResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/payload/response/TransferResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/reponsitory/IdempotencyKeyRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/Repository/IdempotencyKeyRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/reponsitory/TransactionReponsitory.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/security/JwtFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/service/TransactionService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/QuoocCuongwf/EFEWallet/TransactionService/util/JwtUtil.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/data.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/QuoocCuongwf/EFEWallet/TransactionService/TransactionServiceApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/resources/application-test.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../WalletService/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../WalletService/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/Repository/WalletRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/Repository/WalletRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/annotation/IsOwner.java" beforeDir="false" afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/annotation/IsOwner.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/controller/WalletController.java" beforeDir="false" afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/controller/WalletController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/security/OwnershipService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/security/OwnershipService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/service/WalletService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../WalletService/src/main/java/com/QuoocsCuongwf/EFEWallet/WalletService/service/WalletService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../WalletService/src/main/resources/application.properties" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="47" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Enum" />
+        <option value="Dockerfile" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="3AnN7K07TLQ8bTIMCd9CXZD2Mcu" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Docker.docker-compose.yml: Compose Deployment.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;Spring Boot.TransactionServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main.cuong.dev&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager" selected="Spring Boot.TransactionServiceApplication">
+    <configuration default="true" type="GroovyScriptRunConfiguration" factoryName="Groovy">
+      <setting name="path" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workDir" value="file://$PROJECT_DIR$" />
+      <setting name="debug" value="false" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TransactionServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="TransactionService" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.QuoocCuongwf.EFEWallet.TransactionService.TransactionServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
+      <deployment type="docker-compose.yml">
+        <settings />
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="docker-compose.yml: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="sourceFilePath" value="docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Docker.docker-compose.yml: Compose Deployment" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.31033.145" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.31033.145" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="StructureViewState">
+    <option name="selectedTab" value="Logical" />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d60bfbc0-a193-466f-94f7-83497ca83066" name="Changes" comment="" />
+      <created>1773224207758</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773224207758</updated>
+      <workItem from="1773224210420" duration="531000" />
+      <workItem from="1773286019281" duration="620000" />
+      <workItem from="1773287260629" duration="679000" />
+      <workItem from="1773310271714" duration="1322000" />
+      <workItem from="1773312143532" duration="1571000" />
+      <workItem from="1773314438908" duration="276000" />
+      <workItem from="1773315133784" duration="100000" />
+      <workItem from="1773321071008" duration="2151000" />
+      <workItem from="1773323667881" duration="36000" />
+      <workItem from="1775968701138" duration="782000" />
+      <workItem from="1775970059800" duration="14000" />
+      <workItem from="1775970119994" duration="6327000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
