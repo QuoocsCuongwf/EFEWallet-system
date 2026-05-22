@@ -1,4 +1,4 @@
-package com.QuoocCuongwf.EFEWallet.AuthService.util;
+package com.QuoocCuongwf.EFEWallet.AuthService.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @AllArgsConstructor
-public class OtpUtil {
+public class OtpService {
     @Autowired
     private final RedisTemplate<Object, Object> redisTemplate;
 

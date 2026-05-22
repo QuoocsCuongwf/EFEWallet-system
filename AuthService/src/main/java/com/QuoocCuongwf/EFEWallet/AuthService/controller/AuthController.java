@@ -10,10 +10,7 @@ import com.QuoocCuongwf.EFEWallet.AuthService.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(SecurityConstants.AUTH_API)
@@ -41,4 +38,10 @@ public class AuthController {
                 .build();
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(){
+        authService.logout();
+        return ResponseEntity.ok("Logged out");
+    }
+
 }

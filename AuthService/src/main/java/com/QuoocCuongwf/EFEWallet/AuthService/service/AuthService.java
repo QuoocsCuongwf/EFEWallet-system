@@ -13,6 +13,7 @@ import com.QuoocCuongwf.EFEWallet.AuthService.reponsitory.RolesReponsitory;
 import com.QuoocCuongwf.EFEWallet.AuthService.reponsitory.UserReponsitory;
 import com.QuoocCuongwf.EFEWallet.AuthService.security.CustomUserDetails;
 import com.QuoocCuongwf.EFEWallet.AuthService.security.JwtService;
+import com.QuoocCuongwf.EFEWallet.AuthService.util.JwtUtil;
 import com.QuoocsCuongwf.EFEWallet.WalletService.grpc.WalletServiceGrpc;
 import com.QuoocsCuongwf.EFEWallet.WalletService.grpc.GenReq;
 import com.QuoocsCuongwf.EFEWallet.WalletService.grpc.GenRes;
@@ -20,6 +21,8 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,6 +43,7 @@ public class AuthService {
     private final RolesReponsitory rolesReponsitory;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RedisTemplate<String,String> redisTemplate;
 
     @Value("${spring.grpc.client.wallet-service.address:static://localhost:9090}")
     private String walletServiceAddress;
@@ -71,7 +75,8 @@ public class AuthService {
         }
         CustomUserDetails details = new CustomUserDetails(user);
         String token = jwtService.generateToken(details);
-        return new LoginResponse(token, null, jwtService.getExpirationMs());
+        String refeshToken = jwtService.generateToken(details);
+        return new LoginResponse(token, refeshToken, jwtService.getExpirationMs());
     }
 
     @Transactional
@@ -117,5 +122,9 @@ public class AuthService {
                 "Register success",
                 walletDto
         );
+    }
+    public void logout(){
+       String token=jwtService.getAccessToken();
+        jwtService.addBlackListToken(token);
     }
 }

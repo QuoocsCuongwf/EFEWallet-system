@@ -12,16 +12,18 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
-    @Value("${redis.host}")
+
+    @Value("${spring.data.redis.host}")
     private String redisHost;
 
-    @Value("${redis.port}")
-    private int redisPost;
+    @Value("${spring.data.redis.port}")
+    private int redisPort;
 
     @Bean
     public LettuceConnectionFactory redisConnectionFactory(){
-        return new LettuceConnectionFactory(new RedisStandaloneConfiguration(redisHost,redisPost));
+        return new LettuceConnectionFactory(new RedisStandaloneConfiguration(redisHost, redisPort));
     }
+
     @Bean
     @Primary
     public RedisTemplate<Object,Object> redisTemplate (RedisConnectionFactory redisConnectionFactory){
@@ -30,5 +32,4 @@ public class RedisConfig {
         template.setKeySerializer(new StringRedisSerializer());
         return template;
     }
-
 }
