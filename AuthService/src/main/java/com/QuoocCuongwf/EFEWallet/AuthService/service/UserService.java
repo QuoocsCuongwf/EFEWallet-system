@@ -1,7 +1,7 @@
 package com.QuoocCuongwf.EFEWallet.AuthService.service;
 
 import com.QuoocCuongwf.EFEWallet.AuthService.entity.User;
-import com.QuoocCuongwf.EFEWallet.AuthService.reponsitory.UserReponsitory;
+import com.QuoocCuongwf.EFEWallet.AuthService.repository.UserReponsitory;
 import com.QuoocCuongwf.EFEWallet.AuthService.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

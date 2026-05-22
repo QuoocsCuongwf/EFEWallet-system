@@ -1,4 +1,4 @@
-package com.QuoocCuongwf.EFEWallet.AuthService.reponsitory;
+package com.QuoocCuongwf.EFEWallet.AuthService.repository;
 
 import com.QuoocCuongwf.EFEWallet.AuthService.entity.Roles;
 import org.springframework.data.jpa.repository.JpaRepository;

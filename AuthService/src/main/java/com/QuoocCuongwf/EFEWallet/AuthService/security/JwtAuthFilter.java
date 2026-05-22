@@ -1,7 +1,7 @@
 package com.QuoocCuongwf.EFEWallet.AuthService.security;
 
 import com.QuoocCuongwf.EFEWallet.AuthService.entity.User;
-import com.QuoocCuongwf.EFEWallet.AuthService.reponsitory.UserReponsitory;
+import com.QuoocCuongwf.EFEWallet.AuthService.repository.UserReponsitory;
 import lombok.RequiredArgsConstructor;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
