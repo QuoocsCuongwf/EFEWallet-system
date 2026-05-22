@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: NotificationService
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: ${REDIS_TIMEOUT:2s}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: wallet-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+server:
+  port: ${SERVER_PORT:8085}
+
+jwt:
+  secret: ${JWT_SECRET:QuoocsCuongwf_EFEWalletProject_AuthService_SecretKey_ChangeThisToAtLeast64BytesLong}
+
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:QuoocsCuongwf_EFEWalletProject_AuthService_SecretKey_ChangeThisToAtLeast64BytesLong}
+      expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+redis:
+  host: ${REDIS_HOST:localhost}
+  port: ${REDIS_PORT:6379}
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

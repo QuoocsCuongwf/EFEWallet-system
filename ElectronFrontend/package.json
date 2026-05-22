@@ -1,0 +1,21 @@
+{
+  "name": "efewallet-electron-frontend",
+  "version": "0.1.0",
+  "description": "Electron frontend for EFEWallet microservices",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron . --no-sandbox",
+    "dev": "electron . --no-sandbox --enable-logging",
+    "start:sandbox": "electron ."
+  },
+  "keywords": [
+    "electron",
+    "wallet",
+    "efewallet"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^37.2.0"
+  }
+}
