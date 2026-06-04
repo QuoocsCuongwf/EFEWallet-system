@@ -36,7 +36,13 @@ public class TransactionEntity {
     private UUID fromUserId;
 
     @Column(nullable = false)
+    private String fromWallet;
+
+    @Column(nullable = false)
     private UUID toUserId;
+
+    @Column(nullable = false)
+    private String toWallet;
 
     @Column(nullable = false)
     private String idempotencyKey;
