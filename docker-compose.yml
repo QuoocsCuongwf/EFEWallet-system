@@ -96,27 +96,6 @@ services:
       auth-db:
         condition: service_healthy
 
-  transaction-service:
-    build:
-      context: ./TransactionService
-    container_name: transaction-service
-    env_file:
-      - ./TransactionService/.env
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://transaction-db:5432/wallet_transaction_db
-      SPRING_DATASOURCE_USERNAME: wallet
-      SPRING_DATASOURCE_PASSWORD: wallet123
-      JWT_SECRET: QuoocsCuongwf_EFEWalletProject_SecretKey_ChangeThisToAtLeast64BytesLong
-      JWT_EXPIRATION_MS: 3600000
-      SPRING_JPA_DDL_AUTO: update
-      SPRING_SQL_INIT_MODE: always
-      SERVER_PORT: 8084
-    ports:
-      - "8084:8084"
-    depends_on:
-      transaction-db:
-        condition: service_healthy
-
   wallet-service:
     build:
       context: ./WalletService
