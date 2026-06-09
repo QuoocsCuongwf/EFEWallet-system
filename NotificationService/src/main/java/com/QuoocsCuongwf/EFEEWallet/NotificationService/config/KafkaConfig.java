@@ -1,17 +1,15 @@
 package com.QuoocsCuongwf.EFEEWallet.NotificationService.config;
 
-import org.apache.kafka.clients.admin.NewTopic;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.annotation.EnableKafka;
+import tools.jackson.databind.ObjectMapper;
+
 
 @Configuration
+@EnableKafka
 public class KafkaConfig {
-    @Bean
-    public NewTopic walletTransactionTopic() {
-        return TopicBuilder.name("wallet-transactions")
-                .partitions(3)
-                .replicas(1)
-                .build();
-    }
+
+
 }
