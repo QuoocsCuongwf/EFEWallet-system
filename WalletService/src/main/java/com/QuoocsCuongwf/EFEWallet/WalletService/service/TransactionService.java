@@ -68,6 +68,7 @@ public class TransactionService {
                     .amount(transaction.getAmount())
                     .description(transaction.getDescription())
                     .time(transaction.getUpdatedAt())
+                    .transactionId(transaction.getId())
                     .build();
             kafkaTemplate.send("wallet-transactions",transferMessage);
             return TransferResponse.builder()
