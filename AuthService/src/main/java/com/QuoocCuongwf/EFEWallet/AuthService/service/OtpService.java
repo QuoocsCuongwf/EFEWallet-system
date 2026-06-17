@@ -1,5 +1,10 @@
 package com.QuoocCuongwf.EFEWallet.AuthService.service;
 
+import com.QuoocCuongwf.EFEWallet.AuthService.config.SecurityConstants;
+import com.QuoocCuongwf.EFEWallet.AuthService.entity.User;
+import com.QuoocCuongwf.EFEWallet.AuthService.exception.EmailUsedException;
+import com.QuoocCuongwf.EFEWallet.AuthService.payload.dto.OtpMessage;
+import com.QuoocCuongwf.EFEWallet.AuthService.repository.UserReponsitory;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -19,17 +24,36 @@ public class OtpService {
     private final RedisTemplate<Object, Object> redisTemplate;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-    public void generationOtp(UUID userId, String action) {
+
+    private UserReponsitory userReponsitory;
+
+    private MessageService messageService;
+
+    public boolean generationOtp( String identifier, String action) {
+        if (action.equals(SecurityConstants.ACTION_REG)){
+            boolean existing = userReponsitory.existsByEmail(identifier);
+            if (existing) {
+                new EmailUsedException(identifier);
+            }
+        }
         SecureRandom random = new SecureRandom();
         String otp = String.valueOf(100000 + random.nextInt(900000));
         String hash = encoder.encode(otp);
-        String key = "otp:" + action + ":" + userId;
+        String key = "otp:" + action + ":" + identifier;
         Map<Object,Object> value=new HashMap<>();
         value.put("otpHash", hash);
         value.put("attempt", 0);
         value.put("maxAttempt", 5);
 
         redisTemplate.opsForValue().set(key, value, 5, TimeUnit.MINUTES);
+        OtpMessage message=OtpMessage.builder()
+                .Action(action)
+                .identifier(identifier)
+                .otp(otp)
+                .build();
+        messageService.sendMessage("auth-otp-events",message);
+         return true;
+
     }
     public void verifyOtp(String userId, String action, String inputOtp) {
 

@@ -3,6 +3,7 @@ package com.QuoocCuongwf.EFEWallet.AuthService.service;
 import com.QuoocCuongwf.EFEWallet.AuthService.entity.Roles;
 import com.QuoocCuongwf.EFEWallet.AuthService.entity.User;
 import com.QuoocCuongwf.EFEWallet.AuthService.enums.WalletStatus;
+import com.QuoocCuongwf.EFEWallet.AuthService.exception.EmailNotExistException;
 import com.QuoocCuongwf.EFEWallet.AuthService.exception.RolesNotFoundException;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.dto.WalletDto;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.LoginRequest;
@@ -63,8 +64,8 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        User user = userReponsitory.findUserByEmail(request.getEmail());
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        User user = userReponsitory.findUserByEmail(request.getEmail()).orElseThrow(()->new EmailNotExistException(request.getEmail()));
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid credentials");
         }
         if(!user.isEnabled()) {
@@ -78,8 +79,8 @@ public class AuthService {
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
-        User existing = userReponsitory.findUserByEmail(request.getEmail());
-        if (existing != null) {
+        boolean existing = userReponsitory.existsByEmail(request.getEmail());
+        if (existing) {
             throw new IllegalArgumentException("Email already in use");
         }
 
@@ -120,6 +121,7 @@ public class AuthService {
                 walletDto
         );
     }
+
     public void logout(){
        String token=jwtService.getAccessToken();
         jwtService.addBlackListToken(token);

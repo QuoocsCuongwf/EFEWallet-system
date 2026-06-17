@@ -7,7 +7,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface UserReponsitory extends JpaRepository<User, UUID> {
-     User findUserByEmail(String email);
+     public Optional<User> findUserByEmail(String email);
+
+     boolean existsByEmail(String email);
      @Override
      Optional<User> findById(UUID uuid);
 }

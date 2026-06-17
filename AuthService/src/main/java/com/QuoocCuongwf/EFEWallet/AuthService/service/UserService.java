@@ -18,10 +18,8 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userReponsitory.findUserByEmail(email);
-        if (user == null) {
-            throw new UsernameNotFoundException(email);
-        }
+        User user = userReponsitory.findUserByEmail(email).orElseThrow(()->new RuntimeException());
+
         return new CustomUserDetails(user);
     }
     public UserDetails loadUserById(UUID id) throws UsernameNotFoundException  {
