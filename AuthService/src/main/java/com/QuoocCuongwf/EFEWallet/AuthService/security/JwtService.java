@@ -1,5 +1,7 @@
 package com.QuoocCuongwf.EFEWallet.AuthService.security;
 
+import com.QuoocCuongwf.EFEWallet.AuthService.entity.User;
+import com.QuoocCuongwf.EFEWallet.AuthService.repository.UserReponsitory;
 import com.QuoocCuongwf.EFEWallet.AuthService.service.UserService;
 import com.QuoocCuongwf.EFEWallet.AuthService.util.JwtUtil;
 import io.jsonwebtoken.*;
@@ -37,6 +39,9 @@ public class JwtService {
     private String secretKey;
     @Value("${jwt.expiration-ms:${JWT_EXPIRATION_MS:3600000}}")
     private long expirationMs;
+    @Autowired
+    private UserReponsitory userReponsitory;
+
     private Key getSignInKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
@@ -97,6 +102,13 @@ public class JwtService {
                 .getBody();
 
         return UUID.fromString(claims.getSubject());
+    }
+
+    public User getUserFromJwt(String token){
+        User user=userReponsitory.findById(getUserIdFromJWT(token))
+                .orElseThrow(()->new RuntimeException("User not find"));
+        return user;
+
     }
 
     public boolean validateToken(String authToken) {
