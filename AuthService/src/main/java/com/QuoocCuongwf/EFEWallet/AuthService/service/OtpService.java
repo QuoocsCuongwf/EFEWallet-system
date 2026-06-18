@@ -2,6 +2,8 @@ package com.QuoocCuongwf.EFEWallet.AuthService.service;
 
 import com.QuoocCuongwf.EFEWallet.AuthService.config.SecurityConstants;
 import com.QuoocCuongwf.EFEWallet.AuthService.entity.User;
+import com.QuoocCuongwf.EFEWallet.AuthService.exception.EmailNotExistException;
+import com.QuoocCuongwf.EFEWallet.AuthService.exception.EmailNotMatchWithUserCurrent;
 import com.QuoocCuongwf.EFEWallet.AuthService.exception.EmailUsedException;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.dto.OtpMessage;
 import com.QuoocCuongwf.EFEWallet.AuthService.repository.UserReponsitory;
@@ -29,12 +31,23 @@ public class OtpService {
 
     private MessageService messageService;
 
+    private UserService userService;
+
     public boolean generationOtp( String identifier, String action) {
         if (action.equals(SecurityConstants.ACTION_REG)){
             boolean existing = userReponsitory.existsByEmail(identifier);
             if (existing) {
                 new EmailUsedException(identifier);
             }
+        } else {
+            User user = userReponsitory.findUserByEmail(identifier)
+                    .orElseThrow(()-> new EmailNotExistException(identifier));
+            User userCurrent=userService.getUserCurrent();
+            if (userCurrent.getId().equals(user.getId()))
+            {
+                throw new EmailNotMatchWithUserCurrent(userCurrent.getId(),identifier);
+            }
+
         }
         SecureRandom random = new SecureRandom();
         String otp = String.valueOf(100000 + random.nextInt(900000));
