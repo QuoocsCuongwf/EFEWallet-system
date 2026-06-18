@@ -39,6 +39,11 @@ public class OtpService {
             if (existing) {
                 new EmailUsedException(identifier);
             }
+            String redisKey = "REGISTER:PENDING:" + identifier;
+            if (Boolean.FALSE.equals(redisTemplate.hasKey(redisKey))) {
+                throw new RuntimeException("email not match or register timeout");
+            }
+
         } else {
             User user = userReponsitory.findUserByEmail(identifier)
                     .orElseThrow(()-> new EmailNotExistException(identifier));
@@ -68,9 +73,9 @@ public class OtpService {
          return true;
 
     }
-    public void verifyOtp(String userId, String action, String inputOtp) {
+    public boolean verifyOtp(String identifier, String action, String inputOtp) {
 
-        String key = "otp:" + action + ":" + userId;
+        String key = "otp:" + action + ":" + identifier;
         Map<String, Object> data = (Map<String, Object>) redisTemplate.opsForValue().get(key);
 
         if (data == null) {
@@ -93,5 +98,6 @@ public class OtpService {
             throw new RuntimeException("Invalid OTP");
         }
         redisTemplate.delete(key);
+        return true;
     }
 }

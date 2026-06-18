@@ -4,6 +4,7 @@ import com.QuoocCuongwf.EFEWallet.AuthService.config.SecurityConstants;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.LoginRequest;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.OtpRequest;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.RegisterRequest;
+import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.VerifyOtpRequest;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.ApiResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.LoginResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.RegisterResponse;
@@ -63,6 +64,25 @@ public class AuthController {
                     .build();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<Void>> verifyOtp(@RequestBody VerifyOtpRequest request){
+        boolean isVerifedSuccessful = otpService.verifyOtp(request.getIdentifier(),request.getAction(), request.getOtpCode());
+        if (isVerifedSuccessful) {
+            ApiResponse<Void> successResponse = ApiResponse.<Void>builder()
+                    .success(true)
+                    .message("Xác thực otp thành công.")
+                    .build();
+            return ResponseEntity.ok(successResponse);
+        } else {
+            ApiResponse<Void> errorResponse = ApiResponse.<Void>builder()
+                    .success(false)
+                    .message("Lỗi ! Otp không chính xác.")
+                    .build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+
     }
 
 }

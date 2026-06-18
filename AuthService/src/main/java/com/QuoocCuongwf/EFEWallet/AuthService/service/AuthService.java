@@ -1,5 +1,6 @@
 package com.QuoocCuongwf.EFEWallet.AuthService.service;
 
+import com.QuoocCuongwf.EFEWallet.AuthService.config.SecurityConstants;
 import com.QuoocCuongwf.EFEWallet.AuthService.entity.Roles;
 import com.QuoocCuongwf.EFEWallet.AuthService.entity.User;
 import com.QuoocCuongwf.EFEWallet.AuthService.enums.WalletStatus;
@@ -32,7 +33,10 @@ import jakarta.annotation.PostConstruct;
 import tools.jackson.core.io.BigDecimalParser;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -40,8 +44,9 @@ public class AuthService {
     private final UserReponsitory userReponsitory;
     private final RolesReponsitory rolesReponsitory;
     private final PasswordEncoder passwordEncoder;
+    private final OtpService otpService;
     private final JwtService jwtService;
-    private final RedisTemplate<String,String> redisTemplate;
+    private final RedisTemplate<Object,Object> redisTemplate;
 
     @Value("${spring.grpc.client.wallet-service.address:static://localhost:9090}")
     private String walletServiceAddress;
@@ -93,33 +98,34 @@ public class AuthService {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .role(Set.of(role))
-                .enabled(true)
+                .enabled(false)
                 .build();
+        String key = "REGISTER:PENDING:" + request.getEmail();
 
-        User saved = userReponsitory.save(user);
-        WalletDto walletDto;
-        try {
-            GenReq walletRequest = GenReq.newBuilder()
-                    .setUserId(saved.getId().toString())
-                    .build();
 
-            GenRes walletResponse = walletStub.generation(walletRequest);
-            walletDto = WalletDto.builder()
-                    .walletAddress(walletResponse.getWalletAddress())
-                    .status(WalletStatus.ACTIVATE)
-                    .balance(BigDecimalParser.parse(walletResponse.getBalance()))
-                    .createAt(LocalDateTime.now()) // Sửa lỗi chính tả .now()
-                    .build();
-            System.out.println("Wallet created: " + walletResponse.getWalletAddress());
-        } catch (Exception e) {
-            throw new RuntimeException("Không thể tạo ví, đăng ký thất bại: " + e.getMessage());
-        }
+        redisTemplate.opsForValue().set(key,user,5, TimeUnit.MINUTES);
+
         return new RegisterResponse<>(
-                saved.getId(),
-                saved.getEmail(),
-                "Register success",
-                walletDto
+                null, // ID là null vì chưa lưu xuống Database
+                user.getEmail(),
+                "Đăng ký bước 1 thành công. Vui lòng kiểm tra Email để lấy mã OTP.",
+                null
         );
+    }
+    @Transactional
+    public void verifyAndSaveRegisterUser(String identifier, String otp){
+        otpService.verifyOtp(identifier, SecurityConstants.ACTION_REG,otp);
+
+        String redisKey = "REGISTER:PENDING:" + identifier;
+        User user = (User) redisTemplate.opsForValue().get(redisKey);
+
+        if (user == null) {
+            throw new RuntimeException("Register session expired!");
+        }
+        user.setEnabled(true);
+        userReponsitory.save(user);
+
+        redisTemplate.delete(redisKey);
     }
 
     public void logout(){
