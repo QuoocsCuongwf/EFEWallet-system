@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +24,7 @@ import java.security.Key;
 import java.util.Date;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -104,11 +106,18 @@ public class JwtService {
         return UUID.fromString(claims.getSubject());
     }
 
-    public User getUserFromJwt(String token){
-        User user=userReponsitory.findById(getUserIdFromJWT(token))
-                .orElseThrow(()->new RuntimeException("User not find"));
-        return user;
-
+    public User getCurrrentUser(){
+        Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null ||
+                !authentication.isAuthenticated() ||
+                authentication instanceof AnonymousAuthenticationToken) {
+           throw new RuntimeException("Get current user faild");
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof CustomUserDetails) {
+            return ((CustomUserDetails) principal).getUser();
+        }
+        throw new RuntimeException("Get current user faild");
     }
 
     public boolean validateToken(String authToken) {
