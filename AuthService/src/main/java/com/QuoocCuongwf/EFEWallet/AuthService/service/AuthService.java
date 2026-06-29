@@ -9,6 +9,7 @@ import com.QuoocCuongwf.EFEWallet.AuthService.exception.RolesNotFoundException;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.dto.WalletDto;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.LoginRequest;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.RegisterRequest;
+import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.TransferRequest;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.LoginResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.RegisterResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.repository.RolesReponsitory;
@@ -18,13 +19,16 @@ import com.QuoocCuongwf.EFEWallet.AuthService.security.JwtService;
 import com.QuoocsCuongwf.EFEWallet.WalletService.grpc.WalletServiceGrpc;
 import com.QuoocsCuongwf.EFEWallet.WalletService.grpc.GenReq;
 import com.QuoocsCuongwf.EFEWallet.WalletService.grpc.GenRes;
+import com.google.common.hash.Hashing;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.common.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,10 +36,12 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.PostConstruct;
 import tools.jackson.core.io.BigDecimalParser;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -47,6 +53,8 @@ public class AuthService {
     private final OtpService otpService;
     private final JwtService jwtService;
     private final RedisTemplate<Object,Object> redisTemplate;
+    @Value("${app.security.internal-secret-key}")
+    private String internalSecretKey;
 
     @Value("${spring.grpc.client.wallet-service.address:static://localhost:9090}")
     private String walletServiceAddress;
@@ -127,9 +135,29 @@ public class AuthService {
 
         redisTemplate.delete(redisKey);
     }
-
+    @Transactional
+    public String verifyOtpTransacsion(String identifier, String otp, TransferRequest transfer){
+        String tranSactionVerifiedToken;
+        otpService.verifyOtp(identifier,SecurityConstants.ACTION_TRANSFER,otp);
+        UUID userId = jwtService.getCurrrentUser().getId();
+        String redisKey=userId.toString();
+        String rawData=userId.toString() + transfer.getToWalletAddress() + transfer.getAmount();
+        String hashValue = Hashing.hmacSha256(internalSecretKey.getBytes(StandardCharsets.UTF_8))
+                .hashString(rawData, StandardCharsets.UTF_8)
+                .toString();
+        redisTemplate.opsForValue().set(redisKey,hashValue,5,TimeUnit.MINUTES);
+        return hashValue;
+    }
+    public boolean verifyTransactionToken(String token, UUID userId){
+        String data = redisTemplate.opsForValue().get(userId).toString();
+        if (data==null || data.equals(token)){
+            return false;
+        }
+        return true;
+    }
     public void logout(){
        String token=jwtService.getAccessToken();
         jwtService.addBlackListToken(token);
     }
+
 }

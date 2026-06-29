@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @AllArgsConstructor
+@Service
 public class OtpService {
     @Autowired
     private final RedisTemplate<Object, Object> redisTemplate;
