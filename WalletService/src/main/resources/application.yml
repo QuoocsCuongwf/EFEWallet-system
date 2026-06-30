@@ -47,7 +47,10 @@ spring:
   grpc:
     server:
       port: ${GRPC_PORT:9090}
-
+    client:
+      wallet-service:
+        address: static://localhost:9091
+        negotiation-type: plaintext
 server:
   port: ${SERVER_PORT:8084}
 
@@ -59,6 +62,7 @@ app:
     jwt:
       secret: ${JWT_SECRET:QuoocsCuongwf_EFEWalletProject_AuthService_SecretKey_ChangeThisToAtLeast64BytesLong}
       expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+      internal-secret-key: "EFEWallet_Super_Secret_Key_For_Internal_Microservices_2026@!"
 
 redis:
   host: ${REDIS_HOST:localhost}

@@ -1,5 +1,6 @@
 package com.QuoocsCuongwf.EFEWallet.WalletService.service;
 
+import com.QuoocsCuongwf.EFEWallet.AuthService.grpc.VerifyTokenRequest;
 import com.QuoocsCuongwf.EFEWallet.WalletService.Enum.WalletStatus;
 import com.QuoocsCuongwf.EFEWallet.WalletService.entity.TransactionEntity;
 import com.QuoocsCuongwf.EFEWallet.WalletService.entity.WalletEntity;
@@ -10,24 +11,42 @@ import com.QuoocsCuongwf.EFEWallet.WalletService.payload.request.TransferRequest
 import com.QuoocsCuongwf.EFEWallet.WalletService.payload.response.TransferResponse;
 import com.QuoocsCuongwf.EFEWallet.WalletService.util.SecurityUtils;
 import com.QuoocsCuongwf.EFEWallet.WalletService.Repository.*;
+import com.QuoocsCuongwf.EFEWallet.WalletService.grpc.WalletGrpcClient;
+import com.google.common.hash.Hashing;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class TransactionService {
     private final WalletService walletService;
     private final TransactionRepository transactionRepnsitory;
     private final WalletRepository walletRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private WalletGrpcClient grpcClient;
+    @Value("${app.security.internal-secret-key}")
+    private String internalSecretKey;
 
     @Transactional
     public TransferResponse transfer(TransferRequest request, String idempotencyKey) {
-
+        String rawData=SecurityUtils.getCurrentUserId()+request.getToWalletAddress()+request.getAmount();
+        String hashValue = Hashing.hmacSha256(internalSecretKey.getBytes(StandardCharsets.UTF_8))
+                .hashString(rawData, StandardCharsets.UTF_8)
+                .toString();
+        VerifyTokenRequest verifyTokenRequest=VerifyTokenRequest.newBuilder()
+                .setToken(hashValue)
+                .setUserId(SecurityUtils.getCurrentUserId().toString())
+                .build();
+        if (!grpcClient.verifyToken(verifyTokenRequest).getIsValid()){
+            throw new RuntimeException("Verify not successfull");
+        }
         UUID fromUserId = SecurityUtils.getCurrentUserId();
         WalletEntity toWallet = walletRepository.findByWalletAddressForUpdate(request.getToWalletAddress(), WalletStatus.ACTIVATE)
                 .orElseThrow(() -> new RuntimeException("Wallet not found"));
@@ -88,4 +107,5 @@ public class TransactionService {
             throw e;
         }
     }
+
 }
