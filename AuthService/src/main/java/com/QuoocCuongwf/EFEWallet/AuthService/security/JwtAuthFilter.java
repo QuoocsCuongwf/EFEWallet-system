@@ -1,7 +1,7 @@
 package com.QuoocCuongwf.EFEWallet.AuthService.security;
 
 import com.QuoocCuongwf.EFEWallet.AuthService.entity.User;
-import com.QuoocCuongwf.EFEWallet.AuthService.reponsitory.UserReponsitory;
+import com.QuoocCuongwf.EFEWallet.AuthService.repository.UserReponsitory;
 import lombok.RequiredArgsConstructor;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -29,7 +29,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     ,FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt=getJwtFromRequest(httpServletRequest);
-            if (StringUtils.hasText(jwt) && jwtService.validateToken(jwt)){
+            if (StringUtils.hasText(jwt) && jwtService.validateToken(jwt) && jwtService.isBlackList(jwt)){
                 UUID userId=jwtService.getUserIdFromJWT(jwt);
                 User user=userReponsitory.findById(userId).orElse(null);
                 if (user!=null){

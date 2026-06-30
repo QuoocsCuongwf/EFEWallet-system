@@ -2,25 +2,26 @@ package com.QuoocCuongwf.EFEWallet.AuthService.controller;
 
 import com.QuoocCuongwf.EFEWallet.AuthService.config.SecurityConstants;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.LoginRequest;
+import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.OtpRequest;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.RegisterRequest;
+import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.VerifyOtpRequest;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.ApiResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.LoginResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.RegisterResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.service.AuthService;
+import com.QuoocCuongwf.EFEWallet.AuthService.service.OtpService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(SecurityConstants.AUTH_API)
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
-
+    private final OtpService otpService;
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse data = authService.login(request);
@@ -41,4 +42,47 @@ public class AuthController {
                 .build();
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(){
+        authService.logout();
+        return ResponseEntity.ok("Logged out");
+    }
+
+    @PostMapping("/request-otp")
+    public ResponseEntity<ApiResponse<Void>> createOtp(@Valid @RequestBody OtpRequest otpRequest){
+        boolean isSuccessful=otpService.generationOtp(otpRequest.getIdentifier(),otpRequest.getAction());
+        if (isSuccessful) {
+            ApiResponse<Void> successResponse = ApiResponse.<Void>builder()
+                    .success(true)
+                    .message("Yêu cầu thành công. Mã OTP đang được gửi tới địa chỉ liên lạc của bạn.")
+                    .build();
+            return ResponseEntity.ok(successResponse);
+        } else {
+            ApiResponse<Void> errorResponse = ApiResponse.<Void>builder()
+                    .success(false)
+                    .message("Không thể tạo yêu cầu OTP lúc này. Vui lòng kiểm tra lại thông tin.")
+                    .build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<Void>> verifyOtp(@RequestBody VerifyOtpRequest request){
+        boolean isVerifedSuccessful = otpService.verifyOtp(request.getIdentifier(),request.getAction(), request.getOtpCode());
+        if (isVerifedSuccessful) {
+            ApiResponse<Void> successResponse = ApiResponse.<Void>builder()
+                    .success(true)
+                    .message("Xác thực otp thành công.")
+                    .build();
+            return ResponseEntity.ok(successResponse);
+        } else {
+            ApiResponse<Void> errorResponse = ApiResponse.<Void>builder()
+                    .success(false)
+                    .message("Lỗi ! Otp không chính xác.")
+                    .build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+
+    }
+
 }

@@ -18,22 +18,35 @@ public class WalletGrpcProvider extends WalletServiceGrpc.WalletServiceImplBase 
 
     @Override
     public void generation(GenReq request, StreamObserver<GenRes> responseObserver) {
-        WalletResponse result = walletService.generation(UUID.fromString(request.getUserId()));
+        try {
+            // Gọi service xử lý logic
+            WalletResponse result = walletService.generation(UUID.fromString(request.getUserId()));
 
-        GenRes response = GenRes.newBuilder()
-                .setUserId(request.getUserId())
-                .setWalletId(result.getWalletId().toString())
-                .setWalletAddress(result.getWalletAddress())
-                .setStatus(result.getStatus().name())
-                .setBalance(result.getBalance() != null ? result.getBalance().toPlainString() : "0")
-                .setCreateAt(Timestamp.newBuilder()
+            // Build response (Đảm bảo các trường result.get... không bị null)
+            GenRes.Builder responseBuilder = GenRes.newBuilder()
+                    .setUserId(request.getUserId())
+                    .setWalletId(result.getWalletId().toString())
+                    .setWalletAddress(result.getWalletAddress())
+                    .setStatus(result.getStatus().name())
+                    .setBalance(result.getBalance() != null ? result.getBalance().toPlainString() : "0");
+
+            if (result.getCreateAt() != null) {
+                responseBuilder.setCreateAt(Timestamp.newBuilder()
                         .setSeconds(result.getCreateAt().toEpochSecond(ZoneOffset.UTC))
                         .setNanos(result.getCreateAt().getNano())
-                        .build())
-                .build();
+                        .build());
+            }
 
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+            responseObserver.onNext(responseBuilder.build());
+            responseObserver.onCompleted();
+
+        } catch (Exception e) {
+            // Trả về lỗi chi tiết để AuthService biết chuyện gì đang xảy ra
+            responseObserver.onError(io.grpc.Status.INTERNAL
+                    .withDescription("Lỗi tại Wallet Provider: " + e.getMessage())
+                    .withCause(e)
+                    .asRuntimeException());
+        }
     }
 
     @Override

@@ -21,4 +21,10 @@ public final class SecurityConstants {
             "/swagger-ui.html",
             "/actuator/health"
     };
+
+    public static final String ACTION_REG = "REGISTER";
+    public static final String ACTION_CHANGE_PASSWORD = "CHANGE PASSWORD";
+    public static final String ACTION_TRANSFER = "TRANSFER";
+    public static final String ACTION_CHANGE_INFO = "CHANGE INFO";
+
 }

@@ -2,16 +2,17 @@ package com.QuoocsCuongwf.EFEWallet.WalletService.service;
 
 import com.QuoocsCuongwf.EFEWallet.WalletService.Enum.WalletStatus;
 import com.QuoocsCuongwf.EFEWallet.WalletService.Repository.WalletRepository;
-import com.QuoocsCuongwf.EFEWallet.WalletService.config.SecurityConstants;
 import com.QuoocsCuongwf.EFEWallet.WalletService.entity.WalletEntity;
 import com.QuoocsCuongwf.EFEWallet.WalletService.exception.WalletIsExistedException;
 import com.QuoocsCuongwf.EFEWallet.WalletService.exception.WalletNotFoundException;
 import com.QuoocsCuongwf.EFEWallet.WalletService.payload.response.BalanceResponse;
 import com.QuoocsCuongwf.EFEWallet.WalletService.payload.response.WalletResponse;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
@@ -20,21 +21,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import static java.util.Arrays.stream;
-import static org.springframework.amqp.core.QueueBuilder.LeaderLocator.random;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class WalletService {
     private final WalletRepository walletRepository;
 
     private final RedisTemplate<Object, Object> redisTemplate;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-    public BalanceResponse balance (UUID walletId){
-        BigDecimal balance = walletRepository.getBalanceById(walletId)
-                .orElseThrow(()-> new WalletNotFoundException("Wallet " + walletId + " not found"));
+    public BalanceResponse balance (UUID userId){
+        WalletEntity wallet = walletRepository.findByUserId(userId)
+                .orElseThrow();
+        BigDecimal balance = wallet.getBalance();
+        log.info("Balance of user {} equal {} ", userId,balance);
         BalanceResponse balanceResponse=BalanceResponse.builder()
                 .balance(balance)
                 .time(LocalDateTime.now())
@@ -42,21 +43,55 @@ public class WalletService {
         return balanceResponse;
     }
 
-    public WalletResponse wallet (UUID walletId){
-        WalletEntity walletEntity=walletRepository.findById(walletId)
-                .orElseThrow(()-> new WalletNotFoundException("Wallet " + walletId + " not found"));
+    @Transactional
+    public boolean debit(BigDecimal amount, UUID userId) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Invalid amount");
+        }
+        WalletEntity wallet = walletRepository.findByUserIdForUpdate(userId,WalletStatus.ACTIVATE)
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
+        if (wallet.getBalance().compareTo(amount) < 0) {
+            return false;
+        }
+        wallet.setBalance(wallet.getBalance().subtract(amount));
+        walletRepository.save(wallet);
+        return true;
+    }
+    @Transactional
+    public boolean credit(BigDecimal amount, String walletAddress) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Invalid amount");
+        }
+        WalletEntity wallet = walletRepository.findByWalletAddressForUpdate(walletAddress,WalletStatus.ACTIVATE)
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
+        wallet.setBalance(wallet.getBalance().add(amount));
+        walletRepository.save(wallet);
+        return true;
+    }
+
+
+    public WalletResponse wallet (UUID userId){
+        WalletEntity walletEntity=walletRepository.findByUserId(userId)
+                .orElseThrow(()-> new WalletNotFoundException("Wallet " + userId + " not found"));
         return WalletResponse.builder()
                 .walletId(walletEntity.getId())
                 .walletAddress(walletEntity.getWalletAddress())
                 .userId(walletEntity.getUserId())
+                .balance(walletEntity.getBalance())
                 .status(walletEntity.getWalletStatus())
                 .createAt(walletEntity.getCreatedAt())
                 .build();
     }
-
+    @Transactional
     public WalletResponse generation (UUID userId) {
-        if (walletRepository.existsWalletEntityByUserId(userId)) {
-            throw new WalletIsExistedException(userId.toString() + " had wallet");
+        WalletEntity existing = walletRepository.findByUserId(userId).orElse(null);
+
+        if (existing != null) {
+            return WalletResponse.builder()
+                    .walletId(existing.getId())
+                    .walletAddress(existing.getWalletAddress())
+                    .status(existing.getWalletStatus())
+                    .build();
         }
         SecureRandom random = new SecureRandom();
         byte[] bytes = new byte[20];
@@ -69,8 +104,12 @@ public class WalletService {
         String address = sb.toString();
 
         WalletEntity wallet = WalletEntity.builder()
-                .walletStatus(WalletStatus.ACTIVATE)
+                .userId(userId)
+                .balance(BigDecimal.ZERO)
                 .walletAddress(address)
+                .walletStatus(WalletStatus.ACTIVATE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
         walletRepository.save(wallet);
 
@@ -81,42 +120,4 @@ public class WalletService {
                 .build();
     }
 
-    public void generationOtp(UUID userId,String action) {
-        SecureRandom random = new SecureRandom();
-        String otp = String.valueOf(100000 + random.nextInt(900000));
-        String hash = encoder.encode(otp);
-        String key = "otp:" + action + ":" + userId;
-        Map<Object,Object> value=new HashMap<>();
-        value.put("otpHash", hash);
-        value.put("attempt", 0);
-        value.put("maxAttempt", 5);
-
-        redisTemplate.opsForValue().set(key, value, 5, TimeUnit.MINUTES);
-    }
-    public void verifyOtp(String userId, String action, String inputOtp) {
-
-        String key = "otp:" + action + ":" + userId;
-        Map<String, Object> data = (Map<String, Object>) redisTemplate.opsForValue().get(key);
-
-        if (data == null) {
-            throw new RuntimeException("OTP expired or not found");
-        }
-
-        int attempt = (int) data.get("attempt");
-        int maxAttempt = (int) data.get("maxAttempt");
-
-        if (attempt >= maxAttempt) {
-            redisTemplate.delete(key);
-            throw new RuntimeException("Too many attempts");
-        }
-
-        String hash = (String) data.get("otpHash");
-
-        if (!encoder.matches(inputOtp, hash)) {
-            data.put("attempt", attempt + 1);
-            redisTemplate.opsForValue().set(key, data);
-            throw new RuntimeException("Invalid OTP");
-        }
-        redisTemplate.delete(key);
-    }
 }

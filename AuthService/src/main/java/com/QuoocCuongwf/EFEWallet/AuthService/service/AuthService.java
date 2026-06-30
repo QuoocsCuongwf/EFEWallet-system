@@ -1,27 +1,34 @@
 package com.QuoocCuongwf.EFEWallet.AuthService.service;
 
+import com.QuoocCuongwf.EFEWallet.AuthService.config.SecurityConstants;
 import com.QuoocCuongwf.EFEWallet.AuthService.entity.Roles;
 import com.QuoocCuongwf.EFEWallet.AuthService.entity.User;
 import com.QuoocCuongwf.EFEWallet.AuthService.enums.WalletStatus;
+import com.QuoocCuongwf.EFEWallet.AuthService.exception.EmailNotExistException;
 import com.QuoocCuongwf.EFEWallet.AuthService.exception.RolesNotFoundException;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.dto.WalletDto;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.LoginRequest;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.RegisterRequest;
+import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.TransferRequest;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.LoginResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.RegisterResponse;
-import com.QuoocCuongwf.EFEWallet.AuthService.reponsitory.RolesReponsitory;
-import com.QuoocCuongwf.EFEWallet.AuthService.reponsitory.UserReponsitory;
+import com.QuoocCuongwf.EFEWallet.AuthService.repository.RolesReponsitory;
+import com.QuoocCuongwf.EFEWallet.AuthService.repository.UserReponsitory;
 import com.QuoocCuongwf.EFEWallet.AuthService.security.CustomUserDetails;
 import com.QuoocCuongwf.EFEWallet.AuthService.security.JwtService;
 import com.QuoocsCuongwf.EFEWallet.WalletService.grpc.WalletServiceGrpc;
 import com.QuoocsCuongwf.EFEWallet.WalletService.grpc.GenReq;
 import com.QuoocsCuongwf.EFEWallet.WalletService.grpc.GenRes;
+import com.google.common.hash.Hashing;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.common.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,9 +36,13 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.PostConstruct;
 import tools.jackson.core.io.BigDecimalParser;
 
-import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +50,11 @@ public class AuthService {
     private final UserReponsitory userReponsitory;
     private final RolesReponsitory rolesReponsitory;
     private final PasswordEncoder passwordEncoder;
+    private final OtpService otpService;
     private final JwtService jwtService;
+    private final RedisTemplate<Object,Object> redisTemplate;
+    @Value("${app.security.internal-secret-key}")
+    private String internalSecretKey;
 
     @Value("${spring.grpc.client.wallet-service.address:static://localhost:9090}")
     private String walletServiceAddress;
@@ -62,8 +77,8 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        User user = userReponsitory.findUserByEmail(request.getEmail());
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        User user = userReponsitory.findUserByEmail(request.getEmail()).orElseThrow(()->new EmailNotExistException(request.getEmail()));
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid credentials");
         }
         if(!user.isEnabled()) {
@@ -71,13 +86,14 @@ public class AuthService {
         }
         CustomUserDetails details = new CustomUserDetails(user);
         String token = jwtService.generateToken(details);
-        return new LoginResponse(token, null, jwtService.getExpirationMs());
+        String refeshToken = jwtService.generateToken(details);
+        return new LoginResponse(token, refeshToken, jwtService.getExpirationMs());
     }
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
-        User existing = userReponsitory.findUserByEmail(request.getEmail());
-        if (existing != null) {
+        boolean existing = userReponsitory.existsByEmail(request.getEmail());
+        if (existing) {
             throw new IllegalArgumentException("Email already in use");
         }
 
@@ -90,32 +106,59 @@ public class AuthService {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .role(Set.of(role))
-                .enabled(true)
+                .enabled(false)
                 .build();
+        String key = "REGISTER:PENDING:" + request.getEmail();
 
-        User saved = userReponsitory.save(user);
-        WalletDto walletDto;
-        try {
-            GenReq walletRequest = GenReq.newBuilder()
-                    .setUserId(saved.getId().toString())
-                    .build();
 
-            GenRes walletResponse = walletStub.generation(walletRequest);
-            walletDto = WalletDto.builder()
-                    .walletAddress(walletResponse.getWalletAddress())
-                    .status(WalletStatus.ACTIVATE)
-                    .balance(BigDecimalParser.parse(walletResponse.getBalance()))
-                    .createAt(LocalDateTime.now()) // Sửa lỗi chính tả .now()
-                    .build();
-            System.out.println("Wallet created: " + walletResponse.getWalletAddress());
-        } catch (Exception e) {
-            throw new RuntimeException("Không thể tạo ví, đăng ký thất bại: " + e.getMessage());
-        }
+        redisTemplate.opsForValue().set(key,user,5, TimeUnit.MINUTES);
+
         return new RegisterResponse<>(
-                saved.getId(),
-                saved.getEmail(),
-                "Register success",
-                walletDto
+                null, // ID là null vì chưa lưu xuống Database
+                user.getEmail(),
+                "Đăng ký bước 1 thành công. Vui lòng kiểm tra Email để lấy mã OTP.",
+                null
         );
     }
+    @Transactional
+    public void verifyAndSaveRegisterUser(String identifier, String otp){
+        otpService.verifyOtp(identifier, SecurityConstants.ACTION_REG,otp);
+
+        String redisKey = "REGISTER:PENDING:" + identifier;
+        User user = (User) redisTemplate.opsForValue().get(redisKey);
+
+        if (user == null) {
+            throw new RuntimeException("Register session expired!");
+        }
+        user.setEnabled(true);
+        userReponsitory.save(user);
+
+        redisTemplate.delete(redisKey);
+    }
+    @Transactional
+    public String verifyOtpTransacsion(String identifier, String otp, TransferRequest transfer){
+        String tranSactionVerifiedToken;
+        otpService.verifyOtp(identifier,SecurityConstants.ACTION_TRANSFER,otp);
+        UUID userId = jwtService.getCurrrentUser().getId();
+        String redisKey=userId.toString();
+        String rawData=userId.toString() + transfer.getToWalletAddress() + transfer.getAmount();
+        String hashValue = Hashing.hmacSha256(internalSecretKey.getBytes(StandardCharsets.UTF_8))
+                .hashString(rawData, StandardCharsets.UTF_8)
+                .toString();
+        redisTemplate.opsForValue().set(redisKey,hashValue,5,TimeUnit.MINUTES);
+        return hashValue;
+    }
+    public boolean verifyTransactionToken(String token, String userId){
+        String data = redisTemplate.opsForValue().get(userId).toString();
+        if (data==null || data.equals(token)){
+            return false;
+        }
+        redisTemplate.delete(userId);
+        return true;
+    }
+    public void logout(){
+       String token=jwtService.getAccessToken();
+        jwtService.addBlackListToken(token);
+    }
+
 }
