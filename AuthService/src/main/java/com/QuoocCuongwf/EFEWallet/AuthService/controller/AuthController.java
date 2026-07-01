@@ -5,6 +5,7 @@ import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.LoginRequest;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.OtpRequest;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.RegisterRequest;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.VerifyOtpRequest;
+import com.QuoocCuongwf.EFEWallet.AuthService.payload.request.VerifyTransferOtpRequest;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.ApiResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.LoginResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.RegisterResponse;
@@ -67,22 +68,33 @@ public class AuthController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<ApiResponse<Void>> verifyOtp(@RequestBody VerifyOtpRequest request){
-        boolean isVerifedSuccessful = otpService.verifyOtp(request.getIdentifier(),request.getAction(), request.getOtpCode());
-        if (isVerifedSuccessful) {
-            ApiResponse<Void> successResponse = ApiResponse.<Void>builder()
-                    .success(true)
-                    .message("Xác thực otp thành công.")
-                    .build();
-            return ResponseEntity.ok(successResponse);
+    public ResponseEntity<ApiResponse<Void>> verifyOtp(@Valid @RequestBody VerifyOtpRequest request){
+        if (SecurityConstants.ACTION_REG.equals(request.getAction())) {
+            authService.verifyAndSaveRegisterUser(request.getIdentifier(), request.getOtpCode());
         } else {
-            ApiResponse<Void> errorResponse = ApiResponse.<Void>builder()
-                    .success(false)
-                    .message("Lỗi ! Otp không chính xác.")
-                    .build();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            otpService.verifyOtp(request.getIdentifier(), request.getAction(), request.getOtpCode());
         }
 
+        ApiResponse<Void> successResponse = ApiResponse.<Void>builder()
+                .success(true)
+                .message("Xác thực otp thành công.")
+                .build();
+        return ResponseEntity.ok(successResponse);
+    }
+
+    @PostMapping("/verify-transfer-otp")
+    public ResponseEntity<ApiResponse<Void>> verifyTransferOtp(@Valid @RequestBody VerifyTransferOtpRequest request) {
+        authService.verifyOtpTransacsion(
+                request.getIdentifier(),
+                request.getOtpCode(),
+                request.toTransferRequest()
+        );
+
+        ApiResponse<Void> successResponse = ApiResponse.<Void>builder()
+                .success(true)
+                .message("Xác thực giao dịch thành công.")
+                .build();
+        return ResponseEntity.ok(successResponse);
     }
 
 }
