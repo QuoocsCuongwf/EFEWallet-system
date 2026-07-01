@@ -5,5 +5,4 @@
 *.ipr
 out/
 gen/
-#env
 .env

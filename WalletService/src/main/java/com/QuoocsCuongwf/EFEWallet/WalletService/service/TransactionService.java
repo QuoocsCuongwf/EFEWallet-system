@@ -30,7 +30,7 @@ public class TransactionService {
     private final TransactionRepository transactionRepnsitory;
     private final WalletRepository walletRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private WalletGrpcClient grpcClient;
+    private final WalletGrpcClient grpcClient;
     @Value("${app.security.internal-secret-key}")
     private String internalSecretKey;
 
