@@ -149,8 +149,8 @@ public class AuthService {
         return hashValue;
     }
     public boolean verifyTransactionToken(String token, String userId){
-        String data = redisTemplate.opsForValue().get(userId).toString();
-        if (data==null || data.equals(token)){
+        Object cachedToken = redisTemplate.opsForValue().get(userId);
+        if (cachedToken == null || !cachedToken.toString().equals(token)){
             return false;
         }
         redisTemplate.delete(userId);

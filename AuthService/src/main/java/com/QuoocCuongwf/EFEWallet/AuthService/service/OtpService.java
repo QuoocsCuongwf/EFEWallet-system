@@ -39,7 +39,7 @@ public class OtpService {
         if (action.equals(SecurityConstants.ACTION_REG)){
             boolean existing = userReponsitory.existsByEmail(identifier);
             if (existing) {
-                new EmailUsedException(identifier);
+                throw new EmailUsedException(identifier);
             }
             String redisKey = "REGISTER:PENDING:" + identifier;
             if (Boolean.FALSE.equals(redisTemplate.hasKey(redisKey))) {
@@ -50,7 +50,7 @@ public class OtpService {
             User user = userReponsitory.findUserByEmail(identifier)
                     .orElseThrow(()-> new EmailNotExistException(identifier));
             User userCurrent=userService.getUserCurrent();
-            if (userCurrent.getId().equals(user.getId()))
+            if (!userCurrent.getId().equals(user.getId()))
             {
                 throw new EmailNotMatchWithUserCurrent(userCurrent.getId(),identifier);
             }
