@@ -6,3 +6,8 @@
 out/
 gen/
 .env
+node_modules/
+.next/
+EFE_Gui/.next/
+*.tsbuildinfo
+next-env.d.ts

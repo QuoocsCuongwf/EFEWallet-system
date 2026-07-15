@@ -89,6 +89,7 @@ services:
       DB_NAME: wallet_auth_db
       DB_USERNAME: wallet
       DB_PASSWORD: wallet123
+      JWT_SECRET: ${JWT_SECRET:QuoocsCuongwf_EFEWalletProject_AuthService_SecretKey_ChangeThisToAtLeast64BytesLong}
       SERVER_PORT: 8083
     ports:
       - "8083:8083"
@@ -113,7 +114,7 @@ services:
       RABBITMQ_USERNAME: wallet
       RABBITMQ_PASSWORD: wallet123
       RABBITMQ_VHOST: /
-      JWT_SECRET: QuoocsCuongwf_EFEWalletProject_WalletService_SecretKey_ChangeInProduction
+      JWT_SECRET: ${JWT_SECRET:QuoocsCuongwf_EFEWalletProject_AuthService_SecretKey_ChangeThisToAtLeast64BytesLong}
       JWT_EXPIRATION_MS: 3600000
       JPA_DDL_AUTO: update
       SERVER_PORT: 8084
