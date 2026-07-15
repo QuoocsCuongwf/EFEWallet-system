@@ -6,11 +6,10 @@ import com.QuoocsCuongwf.EFEWallet.AuthService.grpc.VerifyTokenResponse;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +31,11 @@ public class WalletGrpcClient {
         authServiceBlockingStub = AuthServiceGrpc.newBlockingStub(authChannel);
     }
     public VerifyTokenResponse verifyToken(VerifyTokenRequest verifyTokenRequest) {
+        if (authServiceBlockingStub == null) {
+            throw new IllegalStateException("gRPC auth stub is not initialized");
+        }
         try {
-            VerifyTokenResponse response = authServiceBlockingStub.verify(verifyTokenRequest);
-            return response;
+            return authServiceBlockingStub.verify(verifyTokenRequest);
         } catch (StatusRuntimeException e) {
             System.err.println("gRPC Call Failed: " + e.getStatus());
             throw e;
