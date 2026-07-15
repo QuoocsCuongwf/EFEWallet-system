@@ -131,7 +131,6 @@
 		<dependency>
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-stub</artifactId>
-			<version>1.62.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.grpc</groupId>
@@ -140,12 +139,10 @@
 		<dependency>
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-protobuf</artifactId>
-			<version>1.62.2</version>
 		</dependency>
 		<dependency>
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-netty-shaded</artifactId>
-			<version>1.62.2</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.annotation</groupId>
@@ -237,7 +234,7 @@
 					<pluginId>grpc-java</pluginId>
 
 					<pluginArtifact>
-						io.grpc:protoc-gen-grpc-java:1.62.2:exe:${os.detected.classifier}
+						io.grpc:protoc-gen-grpc-java:1.77.1:exe:${os.detected.classifier}
 					</pluginArtifact>
 				</configuration>
 

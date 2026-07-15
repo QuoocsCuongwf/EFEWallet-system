@@ -10,6 +10,8 @@ import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.ApiResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.LoginResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.RegisterResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.service.AuthService;
+import com.QuoocCuongwf.EFEWallet.AuthService.service.UserService;
+import com.QuoocCuongwf.EFEWallet.AuthService.payload.response.UserProfileResponse;
 import com.QuoocCuongwf.EFEWallet.AuthService.service.OtpService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final AuthService authService;
     private final OtpService otpService;
+    private final UserService userService;
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse data = authService.login(request);
@@ -95,6 +98,18 @@ public class AuthController {
                 .message("Xác thực giao dịch thành công.")
                 .build();
         return ResponseEntity.ok(successResponse);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> me() {
+        var user = userService.getUserCurrent();
+        UserProfileResponse profile = new UserProfileResponse(user.getFirstName(), user.getLastName(), user.getEmail());
+        ApiResponse<UserProfileResponse> response = ApiResponse.<UserProfileResponse>builder()
+                .success(true)
+                .message("OK")
+                .data(profile)
+                .build();
+        return ResponseEntity.ok(response);
     }
 
 }

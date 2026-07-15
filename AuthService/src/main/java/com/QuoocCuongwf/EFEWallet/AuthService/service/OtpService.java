@@ -67,7 +67,7 @@ public class OtpService {
 
         redisTemplate.opsForValue().set(key, value, 5, TimeUnit.MINUTES);
         OtpMessage message=OtpMessage.builder()
-                .Action(action)
+                .action(action)
                 .identifier(identifier)
                 .otp(otp)
                 .build();
