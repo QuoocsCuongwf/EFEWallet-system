@@ -31,11 +31,19 @@ export function TransferScreen({ balance, onBack, onCompleted }: TransferScreenP
   const [amountText, setAmountText] = useState("")
   const [note, setNote] = useState("")
   const [modalOpen, setModalOpen] = useState(false)
-  // The Idempotency-Key is generated ONCE per confirmation and held fixed
-  // until the transfer succeeds or the user cancels.
+  // Keep one stable key per transfer draft (recipient/amount/note).
   const [idempotencyKey, setIdempotencyKey] = useState("")
+  const [draftFingerprint, setDraftFingerprint] = useState("")
 
   const amount = Number(amountText.replace(/\D/g, ""))
+
+  function getDraftFingerprint() {
+    return JSON.stringify({
+      recipient: recipient.trim(),
+      amount,
+      note: note.trim(),
+    })
+  }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -51,8 +59,11 @@ export function TransferScreen({ balance, onBack, onCompleted }: TransferScreenP
       toast.error("Số dư không đủ để thực hiện giao dịch.")
       return
     }
-    // Generate a brand-new UUID v4 for this attempt and open the OTP modal.
-    setIdempotencyKey(uuidv4())
+    const nextFingerprint = getDraftFingerprint()
+    if (!idempotencyKey || draftFingerprint !== nextFingerprint) {
+      setIdempotencyKey(uuidv4())
+      setDraftFingerprint(nextFingerprint)
+    }
     setModalOpen(true)
   }
 

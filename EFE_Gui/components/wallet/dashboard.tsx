@@ -4,7 +4,7 @@ import { ArrowDownLeft, ArrowUpRight, LogOut, Send, Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 type DashboardProps = {
-  user: { fullName: string; email: string }
+  user: { fullName: string; email: string; walletAddress?: string | null }
   balance: number
   transactions: Array<{
     id: string
@@ -12,8 +12,10 @@ type DashboardProps = {
     amount: number
     note?: string
     at: string
+    direction: "IN" | "OUT"
   }>
   onTransfer: () => void
+  onViewTransaction: (id: string) => void
   onLogout: () => void
 }
 
@@ -28,6 +30,7 @@ export function Dashboard({
   balance,
   transactions,
   onTransfer,
+  onViewTransaction,
   onLogout,
 }: DashboardProps) {
   const initials = user.fullName
@@ -62,7 +65,7 @@ export function Dashboard({
           <p className="text-sm text-primary-foreground/80">Số dư khả dụng</p>
           <p className="mt-2 text-4xl font-bold tabular-nums">{currency.format(balance)}</p>
           <p className="mt-4 text-xs text-primary-foreground/70">
-            EFE •••• 2048 · {user.email}
+            {user.walletAddress ?? user.email}
           </p>
         </div>
         <Wallet
@@ -95,23 +98,40 @@ export function Dashboard({
             {transactions.map((t) => (
               <li
                 key={t.id}
-                className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3"
+                className="rounded-xl border border-border bg-card"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                    <ArrowUpRight className="h-4 w-4" />
+                <button
+                  type="button"
+                  onClick={() => onViewTransaction(t.id)}
+                  className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-muted/40"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                      {t.direction === "IN" ? (
+                        <ArrowDownLeft className="h-4 w-4" />
+                      ) : (
+                        <ArrowUpRight className="h-4 w-4" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{t.recipient}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t.note || (t.direction === "IN" ? "Nhận tiền" : "Chuyển tiền")}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{t.recipient}</p>
-                    <p className="text-xs text-muted-foreground">{t.note || "Chuyển tiền"}</p>
+                  <div className="text-right">
+                    <p
+                      className={`text-sm font-semibold tabular-nums ${
+                        t.direction === "IN" ? "text-emerald-600" : "text-destructive"
+                      }`}
+                    >
+                      {t.direction === "IN" ? "+" : "-"}
+                      {currency.format(t.amount)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{t.at}</p>
                   </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold tabular-nums text-destructive">
-                    -{currency.format(t.amount)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{t.at}</p>
-                </div>
+                </button>
               </li>
             ))}
           </ul>

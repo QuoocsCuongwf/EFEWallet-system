@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { BrandPanel } from "@/components/brand-panel"
 import { getErrorMessage } from "@/lib/api"
-import { login } from "@/lib/services"
+import { login, getProfile } from "@/lib/services"
 import { setToken, setUser } from "@/lib/auth-storage"
 
 type LoginScreenProps = {
@@ -30,7 +30,15 @@ export function LoginScreen({ prefillEmail, onLoggedIn, onGoToRegister }: LoginS
     try {
       const data = await login({ email, password })
       setToken(data.token)
-      const user = { fullName: data.fullName ?? email.split("@")[0], email }
+      // Fetch profile (first/last name) from server if available
+      let fullName = email.split("@")[0]
+      try {
+        const profile = await getProfile()
+        fullName = [profile.data.firstName, profile.data.lastName].filter(Boolean).join(" ") || fullName
+      } catch {
+        // ignore — fallback to email prefix
+      }
+      const user = { fullName, email }
       setUser(user)
       toast.success("Đăng nhập thành công")
       onLoggedIn(user)

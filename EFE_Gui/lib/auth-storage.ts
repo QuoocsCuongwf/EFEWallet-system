@@ -9,6 +9,7 @@ const USER_KEY = "efe_user"
 type StoredUser = {
   fullName: string
   email: string
+  walletAddress?: string | null
 }
 
 function hasElectronBridge(): boolean {
