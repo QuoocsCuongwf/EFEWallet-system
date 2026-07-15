@@ -62,7 +62,7 @@ app:
     jwt:
       secret: ${JWT_SECRET:QuoocsCuongwf_EFEWalletProject_AuthService_SecretKey_ChangeThisToAtLeast64BytesLong}
       expiration-ms: ${JWT_EXPIRATION_MS:86400000}
-      internal-secret-key: "EFEWallet_Super_Secret_Key_For_Internal_Microservices_2026@!"
+    internal-secret-key: "EFEWallet_Super_Secret_Key_For_Internal_Microservices_2026@!"
 
 redis:
   host: ${REDIS_HOST:localhost}

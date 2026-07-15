@@ -29,7 +29,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     ,FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt=getJwtFromRequest(httpServletRequest);
-            if (StringUtils.hasText(jwt) && jwtService.validateToken(jwt) && jwtService.isBlackList(jwt)){
+            if (StringUtils.hasText(jwt) && jwtService.validateToken(jwt) && !jwtService.isBlackList(jwt)){
                 UUID userId=jwtService.getUserIdFromJWT(jwt);
                 User user=userReponsitory.findById(userId).orElse(null);
                 if (user!=null){

@@ -6,16 +6,21 @@ import com.QuoocsCuongwf.EFEWallet.WalletService.entity.TransactionEntity;
 import com.QuoocsCuongwf.EFEWallet.WalletService.entity.WalletEntity;
 import com.QuoocsCuongwf.EFEWallet.WalletService.enums.TransactionStatus;
 import com.QuoocsCuongwf.EFEWallet.WalletService.enums.TransactionType;
+import com.QuoocsCuongwf.EFEWallet.WalletService.exception.TransactionNotFoundException;
 import com.QuoocsCuongwf.EFEWallet.WalletService.payload.KafkaMessage.TransferMessage;
 import com.QuoocsCuongwf.EFEWallet.WalletService.payload.request.TransferRequest;
+import com.QuoocsCuongwf.EFEWallet.WalletService.payload.response.PageResponse;
+import com.QuoocsCuongwf.EFEWallet.WalletService.payload.response.TransactionDetailResponse;
+import com.QuoocsCuongwf.EFEWallet.WalletService.payload.response.TransactionHistoryItemResponse;
 import com.QuoocsCuongwf.EFEWallet.WalletService.payload.response.TransferResponse;
 import com.QuoocsCuongwf.EFEWallet.WalletService.util.SecurityUtils;
 import com.QuoocsCuongwf.EFEWallet.WalletService.Repository.*;
 import com.QuoocsCuongwf.EFEWallet.WalletService.grpc.WalletGrpcClient;
 import com.google.common.hash.Hashing;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +35,7 @@ public class TransactionService {
     private final TransactionRepository transactionRepnsitory;
     private final WalletRepository walletRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private WalletGrpcClient grpcClient;
+    private final WalletGrpcClient grpcClient;
     @Value("${app.security.internal-secret-key}")
     private String internalSecretKey;
 
@@ -106,6 +111,68 @@ public class TransactionService {
 
             throw e;
         }
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<TransactionHistoryItemResponse> getHistory(
+            UUID userId,
+            TransactionStatus status,
+            TransactionType type,
+            Pageable pageable
+    ) {
+        Page<TransactionHistoryItemResponse> page = transactionRepnsitory
+                .findHistoryByUserId(userId, status, type, pageable)
+                .map(tx -> toHistoryItem(tx, userId));
+        return PageResponse.from(page);
+    }
+
+    @Transactional(readOnly = true)
+    public TransactionDetailResponse getDetail(UUID userId, UUID transactionId) {
+        TransactionEntity transaction = transactionRepnsitory
+                .findByIdAndUserId(transactionId, userId)
+                .orElseThrow(() -> new TransactionNotFoundException("Transaction not found"));
+        return toDetail(transaction, userId);
+    }
+
+    private TransactionHistoryItemResponse toHistoryItem(TransactionEntity tx, UUID userId) {
+        boolean outgoing = userId.equals(tx.getFromUserId());
+        return TransactionHistoryItemResponse.builder()
+                .id(tx.getId())
+                .type(tx.getType())
+                .status(tx.getStatus())
+                .amount(tx.getAmount())
+                .fee(tx.getFee())
+                .currency(tx.getCurrency())
+                .description(tx.getDescription())
+                .fromWallet(tx.getFromWallet())
+                .toWallet(tx.getToWallet())
+                .direction(outgoing ? "OUT" : "IN")
+                .counterpartyWallet(outgoing ? tx.getToWallet() : tx.getFromWallet())
+                .createdAt(tx.getCreatedAt())
+                .updatedAt(tx.getUpdatedAt())
+                .build();
+    }
+
+    private TransactionDetailResponse toDetail(TransactionEntity tx, UUID userId) {
+        boolean outgoing = userId.equals(tx.getFromUserId());
+        return TransactionDetailResponse.builder()
+                .id(tx.getId())
+                .type(tx.getType())
+                .status(tx.getStatus())
+                .amount(tx.getAmount())
+                .fee(tx.getFee())
+                .currency(tx.getCurrency())
+                .description(tx.getDescription())
+                .fromWallet(tx.getFromWallet())
+                .toWallet(tx.getToWallet())
+                .fromUserId(tx.getFromUserId())
+                .toUserId(tx.getToUserId())
+                .direction(outgoing ? "OUT" : "IN")
+                .counterpartyWallet(outgoing ? tx.getToWallet() : tx.getFromWallet())
+                .externalTransactionId(tx.getExternalTransactionId())
+                .createdAt(tx.getCreatedAt())
+                .updatedAt(tx.getUpdatedAt())
+                .build();
     }
 
 }

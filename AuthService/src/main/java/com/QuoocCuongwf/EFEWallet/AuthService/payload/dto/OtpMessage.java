@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class OtpMessage {
-    private String Action;
+    private String action;
     private String identifier;
     private String otp;
 }
