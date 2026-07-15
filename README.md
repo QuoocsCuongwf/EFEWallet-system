@@ -123,12 +123,33 @@ EFEWallet/
 └── docker-compose.kafka.yml
 ```
 
-## 8. Ghi chú phát triển
+## 8. CI/CD (GitHub Actions)
+
+### CI (`.github/workflows/ci.yml`)
+Chạy trên mọi PR và push vào `main` / `main.cuong.dev`:
+- Test `AuthService` (PostgreSQL + Redis)
+- Test `WalletService`, `GatewayService`
+- Compile `NotificationService`
+- Build frontend Next.js (`EFE_Gui`)
+- Smoke build Docker image cho các service
+
+### CD (`.github/workflows/cd.yml`)
+Chạy khi push `main` (hoặc chạy tay qua Actions):
+- Build & push image lên GHCR:
+  - `ghcr.io/<owner>/efewallet-auth-service`
+  - `ghcr.io/<owner>/efewallet-wallet-service`
+  - `ghcr.io/<owner>/efewallet-gateway-service`
+  - `ghcr.io/<owner>/efewallet-notification-service`
+- Tag: `latest`, `sha-<short>`
+
+> Package GHCR mặc định private theo org/user. Cần quyền `packages: write` (workflow đã cấu hình với `GITHUB_TOKEN`).
+
+## 9. Ghi chú phát triển
 
 - Gateway mặc định cho phép CORS từ `http://localhost:3000,http://localhost:3001`.
 - `WalletService` giới hạn page size lịch sử giao dịch tối đa 50.
 - Hệ thống đang ưu tiên môi trường local/dev (`ddl-auto=update`).
 
-## 9. License
+## 10. License
 
 Dự án phục vụ mục đích học tập và nghiên cứu.

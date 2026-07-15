@@ -11,18 +11,17 @@ permissions:
   packages: write
 
 concurrency:
-  group: cd-main
+  group: cd-${{ github.ref }}
   cancel-in-progress: false
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAMESPACE: ${{ github.repository_owner }}
 
 jobs:
   build-and-push:
     name: Build and push Docker images
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -30,15 +29,21 @@ jobs:
           - service: auth-service
             context: ./AuthService
             dockerfile: ./AuthService/Dockerfile
-          - service: transaction-service
-            context: ./TransactionService
-            dockerfile: ./TransactionService/Dockerfile
           - service: wallet-service
             context: ./WalletService
             dockerfile: ./WalletService/Dockerfile
+          - service: gateway-service
+            context: ./GatewayService
+            dockerfile: ./GatewayService/Dockerfile
+          - service: notification-service
+            context: ./NotificationService
+            dockerfile: ./NotificationService/Dockerfile
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Normalize image namespace
+        run: echo "IMAGE_NAMESPACE=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -59,8 +64,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/efewallet-${{ matrix.service }}
           tags: |
-            type=raw,value=latest
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=sha,format=short
+            type=ref,event=branch
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -70,14 +76,22 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
-  deploy-placeholder:
-    name: Deployment placeholder
+  deploy:
+    name: Deploy
     needs: build-and-push
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'workflow_dispatch' }}
     steps:
-      - name: Deployment instructions
+      - name: Deployment checklist
         run: |
-          echo "Images have been published to GHCR."
-          echo "Add your real deploy steps here (SSH/Kubernetes/Helm/ArgoCD, etc.)."
+          echo "Images published to GHCR:"
+          echo "  - ghcr.io/<owner>/efewallet-auth-service"
+          echo "  - ghcr.io/<owner>/efewallet-wallet-service"
+          echo "  - ghcr.io/<owner>/efewallet-gateway-service"
+          echo "  - ghcr.io/<owner>/efewallet-notification-service"
+          echo
+          echo "Add real deploy steps here (SSH docker compose / Kubernetes / ArgoCD)."
+          echo "Example secrets for SSH deploy: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY"
