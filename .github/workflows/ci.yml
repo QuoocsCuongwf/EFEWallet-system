@@ -178,12 +178,16 @@ jobs:
       matrix:
         include:
           - service: AuthService
+            image: auth-service
             dockerfile: AuthService/Dockerfile
           - service: WalletService
+            image: wallet-service
             dockerfile: WalletService/Dockerfile
           - service: GatewayService
+            image: gateway-service
             dockerfile: GatewayService/Dockerfile
           - service: NotificationService
+            image: notification-service
             dockerfile: NotificationService/Dockerfile
     steps:
       - name: Checkout
@@ -193,5 +197,5 @@ jobs:
         run: >
           docker build
           -f "${{ matrix.dockerfile }}"
-          -t "efewallet-${{ matrix.service }}:ci"
+          -t "efewallet-${{ matrix.image }}:ci"
           "./${{ matrix.service }}"
