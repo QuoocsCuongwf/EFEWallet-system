@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   auth-service-tests:
-    name: AuthService - Unit/Context tests
+    name: AuthService tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
@@ -34,61 +34,28 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
-    env:
-      DB_HOST: 127.0.0.1
-      DB_PORT: "5432"
-      DB_NAME: wallet_auth_db
-      DB_USERNAME: wallet
-      DB_PASSWORD: wallet123
-      JWT_SECRET: CI_EFEWallet_AuthService_JWT_Secret_Key_Must_Be_Long_Enough_123456789
-      JWT_EXPIRATION_MS: "3600000"
-      SERVER_PORT: "8083"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: maven
-
-      - name: Run tests
-        run: mvn -B -ntp clean test
-
-  transaction-service-tests:
-    name: TransactionService - Unit/Context tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: TransactionService
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: wallet_transaction_db
-          POSTGRES_USER: wallet
-          POSTGRES_PASSWORD: wallet123
+      redis:
+        image: redis:7-alpine
         ports:
-          - 5432:5432
+          - 6379:6379
         options: >-
-          --health-cmd "pg_isready -U wallet -d wallet_transaction_db"
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
     env:
       DB_HOST: 127.0.0.1
       DB_PORT: "5432"
-      DB_NAME: wallet_transaction_db
-      DB_USER: wallet
+      DB_NAME: wallet_auth_db
+      DB_USERNAME: wallet
       DB_PASSWORD: wallet123
-      JWT_SECRET: CI_EFEWallet_TransactionService_JWT_Secret_Key_Must_Be_Long_Enough_123456789
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: "6379"
+      JWT_SECRET: CI_EFEWallet_AuthService_JWT_Secret_Key_Must_Be_Long_Enough_123456789
       JWT_EXPIRATION_MS: "3600000"
-      SERVER_PORT: "8084"
-      SPRING_JPA_DDL_AUTO: update
-      SPRING_SQL_INIT_MODE: always
+      SERVER_PORT: "8083"
+      SPRING_KAFKA_ADMIN_FAIL_FAST: "false"
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: "127.0.0.1:9092"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -99,12 +66,13 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
+          cache-dependency-path: AuthService/pom.xml
 
       - name: Run tests
-        run: mvn -B -ntp clean test
+        run: ./mvnw -B -ntp clean test
 
   wallet-service-tests:
-    name: WalletService - Unit/Context tests
+    name: WalletService tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
@@ -112,6 +80,9 @@ jobs:
         working-directory: WalletService
     env:
       SPRING_PROFILES_ACTIVE: test
+      JWT_SECRET: CI_EFEWallet_WalletService_JWT_Secret_Key_Must_Be_Long_Enough_123456789
+      JWT_EXPIRATION_MS: "3600000"
+      SPRING_KAFKA_ADMIN_FAIL_FAST: "false"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -122,31 +93,105 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
+          cache-dependency-path: WalletService/pom.xml
 
       - name: Run tests
-        run: mvn -B -ntp clean test
+        run: ./mvnw -B -ntp clean test
+
+  gateway-service-tests:
+    name: GatewayService tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: GatewayService
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: GatewayService/pom.xml
+
+      - name: Run tests
+        run: ./mvnw -B -ntp clean test
+
+  notification-service-build:
+    name: NotificationService compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: NotificationService
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: NotificationService/pom.xml
+
+      # Context tests need Redis/Kafka/Mail; compile/package until a test profile exists.
+      - name: Compile
+        run: ./mvnw -B -ntp clean package -DskipTests
+
+  frontend-build:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8080
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js app
+        run: npx next build EFE_Gui
 
   docker-build-smoke:
     name: Docker build smoke test
     needs:
       - auth-service-tests
-      - transaction-service-tests
       - wallet-service-tests
+      - gateway-service-tests
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         include:
           - service: AuthService
             dockerfile: AuthService/Dockerfile
-          - service: TransactionService
-            dockerfile: TransactionService/Dockerfile
           - service: WalletService
             dockerfile: WalletService/Dockerfile
+          - service: GatewayService
+            dockerfile: GatewayService/Dockerfile
+          - service: NotificationService
+            dockerfile: NotificationService/Dockerfile
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Build image
-        run: docker build -f "${{ matrix.dockerfile }}" -t "efewallet-${{ matrix.service }}:ci" "./${{ matrix.service }}"
+        run: >
+          docker build
+          -f "${{ matrix.dockerfile }}"
+          -t "efewallet-${{ matrix.service }}:ci"
+          "./${{ matrix.service }}"
